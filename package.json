@@ -1,0 +1,21 @@
+{
+  "name": "cailanzi",
+  "version": "1.0.0",
+  "description": "AI智能菜篮子 - 面向家庭场景的Web应用",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.3.13",
+    "vant": "^4.8.1",
+    "axios": "^1.6.7",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.3",
+    "vite": "^5.0.12",
+    "sass": "^1.70.0"
+  }
+}
