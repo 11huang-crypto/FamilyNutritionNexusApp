@@ -1,0 +1,24 @@
+# Family Nutrition Nexus - Python Backend Dependencies
+# 基于 FastAPI 框架的后端服务依赖
+
+# Web 框架
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+
+# 数据验证
+pydantic==2.5.3
+
+# HTTP 客户端（用于测试）
+httpx==0.26.0
+requests==2.31.0
+
+# WebSocket 测试
+websockets==12.0
+
+# 日期时间处理
+python-dateutil==2.8.2
+
+# JSON 处理
+orjson==3.9.12
+
+# CORS 支持（FastAPI 内置）

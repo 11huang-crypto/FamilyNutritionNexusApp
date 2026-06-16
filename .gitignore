@@ -1,0 +1,42 @@
+# Dependencies
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Test
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+.env/
+
+# Data
+*.db
+data/
+
+# Temporary files
+*.tmp
+*.temp
