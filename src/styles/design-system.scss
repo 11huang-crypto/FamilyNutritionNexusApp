@@ -1,0 +1,147 @@
+/**
+ * ============================================
+ * AI智能菜篮子 - 设计规范系统
+ * Design Token System
+ * ============================================
+ * 基准单位：4px
+ * 命名规范：--ab-{category}-{property}-{variant}
+ * ab = AI Basket
+ */
+
+// ============================================
+// 1. 色彩系统 Color System
+// ============================================
+
+// 主色 Primary - 清新绿意，代表健康、天然、新鲜
+:root {
+  --ab-primary-50: #f0fdf4;
+  --ab-primary-100: #dcfce7;
+  --ab-primary-200: #bbf7d0;
+  --ab-primary-300: #86efac;
+  --ab-primary-400: #4ade80;
+  --ab-primary-500: #22c55e;
+  --ab-primary-600: #16a34a;
+  --ab-primary-700: #15803d;
+  --ab-primary-800: #166534;
+  --ab-primary-900: #14532d;
+
+  // 辅色 Secondary - 暖橙，代表活力、食欲
+  --ab-secondary-50: #fff7ed;
+  --ab-secondary-100: #ffedd5;
+  --ab-secondary-200: #fed7aa;
+  --ab-secondary-300: #fdba74;
+  --ab-secondary-400: #fb923c;
+  --ab-secondary-500: #f97316;
+  --ab-secondary-600: #ea580c;
+  --ab-secondary-700: #c2410c;
+
+  // 功能色 Functional Colors
+  --ab-success: #22c55e;
+  --ab-success-light: #dcfce7;
+  --ab-warning: #f59e0b;
+  --ab-warning-light: #fef3c7;
+  --ab-danger: #ef4444;
+  --ab-danger-light: #fee2e2;
+  --ab-info: #3b82f6;
+  --ab-info-light: #dbeafe;
+
+  // 中性色 Neutral
+  --ab-gray-50: #fafafa;
+  --ab-gray-100: #f5f5f5;
+  --ab-gray-200: #e5e5e5;
+  --ab-gray-300: #d4d4d4;
+  --ab-gray-400: #a3a3a3;
+  --ab-gray-500: #737373;
+  --ab-gray-600: #525252;
+  --ab-gray-700: #404040;
+  --ab-gray-800: #262626;
+  --ab-gray-900: #171717;
+
+  // 背景色 Background
+  --ab-bg-page: #f8faf7;
+  --ab-bg-card: #ffffff;
+  --ab-bg-elevated: #ffffff;
+  --ab-bg-surface: #f0f4ef;
+
+  // 文字色 Text
+  --ab-text-primary: #1a1a1a;
+  --ab-text-secondary: #666666;
+  --ab-text-tertiary: #999999;
+  --ab-text-disabled: #cccccc;
+  --ab-text-inverse: #ffffff;
+  --ab-text-link: var(--ab-primary-600);
+
+  // 边框与分割线
+  --ab-border-light: #f0f0f0;
+  --ab-border: #e8e8e8;
+  --ab-border-strong: #d9d9d9;
+  --ab-divider: #f5f5f5;
+
+  // ============================================
+  // 2. 字体系统 Typography
+  // ============================================
+  --ab-font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ab-font-mono: 'SF Mono', 'Fira Code', monospace;
+
+  // 字号 Scale (基于 1.25 倍率)
+  --ab-text-xs: 10px;      // 辅助标注
+  --ab-text-sm: 12px;      // 标签、徽章文字
+  --ab-text-base: 14px;    // 正文
+  --ab-text-lg: 16px;      // 列表标题
+  --ab-text-xl: 18px;      // 卡片标题
+  --ab-text-2xl: 20px;     // 页面标题
+  --ab-text-3xl: 24px;     // 大标题
+  --ab-text-4xl: 28px;     // 展示文字
+
+  // 字重
+  --ab-font-normal: 400;
+  --ab-font-medium: 500;
+  --ab-font-bold: 700;
+
+  // 行高
+  --ab-leading-tight: 1.25;
+  --ab-leading-normal: 1.5;
+  --ab-leading-relaxed: 1.75;
+
+  // ============================================
+  // 3. 间距系统 Spacing (4px基准)
+  // ============================================
+  --ab-space-0: 0px;
+  --ab-space-1: 4px;
+  --ab-space-2: 8px;
+  --ab-space-3: 12px;
+  --ab-space-4: 16px;
+  --ab-space-5: 20px;
+  --ab-space-6: 24px;
+  --ab-space-8: 32px;
+  --ab-space-10: 40px;
+  --ab-space-12: 48px;
+
+  // ============================================
+  // 4. 圆角系统 Border Radius
+  // ============================================
+  --ab-radius-sm: 4px;     // 标签、徽章
+  --ab-radius-md: 8px;     // 按钮、输入框
+  --ab-radius-lg: 12px;    // 卡片
+  --ab-radius-xl: 16px;    // 大图、弹窗
+  --ab-radius-2xl: 20px;   // 特殊展示
+  --ab-radius-full: 9999px; // 头像、圆形按钮
+
+  // ============================================
+  // 5. 阴影系统 Shadow
+  // ============================================
+  --ab-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --ab-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --ab-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --ab-shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --ab-shadow-glow: 0 0 20px rgba(34, 197, 94, 0.15);
+
+  // ============================================
+  // 6. 动画与过渡
+  // ============================================
+  --ab-transition-fast: 150ms ease;
+  --ab-transition-normal: 250ms ease;
+  --ab-transition-slow: 350ms ease;
+  --ab-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ab-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
