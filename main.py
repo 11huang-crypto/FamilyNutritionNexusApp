@@ -9,6 +9,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 from datetime import datetime, timedelta, timezone
 from typing import Optional, List, Union
 import os
+import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,6 +19,9 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "10080"))
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./family-nutrition.db")
+
+VISION_SERVICE_URL = os.getenv("VISION_SERVICE_URL", "http://localhost:8001")
+MEAL_PLAN_SERVICE_URL = os.getenv("MEAL_PLAN_SERVICE_URL", "http://localhost:8002")
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -200,6 +204,57 @@ class BasketCheckResponse(BaseModel):
     warnings: List[RiskWarning]
     total_items: int
     risk_count: int
+
+
+class NutritionInfo(BaseModel):
+    calories: Optional[float]
+    protein: Optional[float]
+    fat: Optional[float]
+    carbs: Optional[float]
+    fiber: Optional[float]
+    vitamins: Optional[dict]
+
+
+class IngredientAnalysis(BaseModel):
+    name: str
+    confidence: float
+    nutrition: NutritionInfo
+
+
+class MatchingRecommendation(BaseModel):
+    ingredient: str
+    reason: str
+    type: str
+
+
+class AnalysisResponse(BaseModel):
+    ingredients: List[IngredientAnalysis]
+    recommendations: List[MatchingRecommendation]
+
+
+class MealPlanDay(BaseModel):
+    day: str
+    breakfast: str
+    lunch: str
+    dinner: str
+    snacks: Optional[List[str]]
+
+
+class MealPlanResponse(BaseModel):
+    week: str
+    meals: List[MealPlanDay]
+
+
+class ShoppingItem(BaseModel):
+    name: str
+    quantity: str
+    category: str
+    purchased: bool
+
+
+class ShoppingListResponse(BaseModel):
+    items: List[ShoppingItem]
+    last_updated: datetime
 
 
 def get_db():
@@ -768,6 +823,99 @@ def check_basket(
         "total_items": len(items),
         "risk_count": len(warnings)
     }
+
+
+@app.post("/analyze", response_model=AnalysisResponse)
+async def analyze_image(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(f"{VISION_SERVICE_URL}/analyze")
+            response.raise_for_status()
+            return response.json()
+    except httpx.HTTPError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"图片分析服务暂时不可用: {str(e)}"
+        )
+
+
+@app.post("/meal-plan/generate", response_model=MealPlanResponse)
+async def generate_meal_plan(
+    family_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    member = db.query(FamilyMember).filter(
+        FamilyMember.family_id == family_id,
+        FamilyMember.user_id == current_user.id
+    ).first()
+    
+    if not member:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="您不是该家庭的成员"
+        )
+    
+    profiles = db.query(HealthProfile).filter(HealthProfile.family_id == family_id).all()
+    
+    health_restrictions = []
+    for profile in profiles:
+        allergens = eval(profile.allergens)
+        conditions = eval(profile.conditions)
+        health_restrictions.extend(allergens)
+        health_restrictions.extend(conditions)
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{MEAL_PLAN_SERVICE_URL}/meal-plan/generate",
+                json={
+                    "family_id": family_id,
+                    "health_restrictions": list(set(health_restrictions))
+                }
+            )
+            response.raise_for_status()
+            return response.json()
+    except httpx.HTTPError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"食谱生成服务暂时不可用: {str(e)}"
+        )
+
+
+@app.get("/shopping-list/realtime")
+async def get_shopping_list_realtime(
+    family_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    member = db.query(FamilyMember).filter(
+        FamilyMember.family_id == family_id,
+        FamilyMember.user_id == current_user.id
+    ).first()
+    
+    if not member:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="您不是该家庭的成员"
+        )
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{MEAL_PLAN_SERVICE_URL}/shopping-list/realtime",
+                params={"family_id": family_id}
+            )
+            response.raise_for_status()
+            return response.json()
+    except httpx.HTTPError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"采购清单服务暂时不可用: {str(e)}"
+        )
 
 
 @app.get("/")
