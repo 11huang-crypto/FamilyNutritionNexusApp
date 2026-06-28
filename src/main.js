@@ -4,14 +4,13 @@ import App from './App.vue'
 import router from './router'
 
 // Vant 组件库
-import { Button, Image as VantImage, Uploader, Divider, Tag, Cell, CellGroup, Card, Progress, List, Stepper, Checkbox, Icon, NavBar, Popup, Dialog, Toast, Loading, Swipe, SwipeItem, Tabbar, TabbarItem, Badge, Notify, Empty, PullRefresh } from 'vant'
+import { Button, Image as VantImage, Uploader, Divider, Tag, Cell, CellGroup, Card, Progress, List, Stepper, Checkbox, Icon, NavBar, Popup, Dialog, Toast, Loading, Swipe, SwipeItem, Tabbar, TabbarItem, Badge, Notify, Empty, PullRefresh, Form, Field, Tabs, Tab } from 'vant'
 import 'vant/lib/index.css'
 
 // 全局样式
 import './styles/design-system.scss'
 
-// Mock 数据（开发环境）
-import './mock'
+
 
 const app = createApp(App)
 
@@ -44,5 +43,9 @@ app.use(Badge)
 app.use(Notify)
 app.use(Empty)
 app.use(PullRefresh)
+app.use(Form)
+app.use(Field)
+app.use(Tabs)
+app.use(Tab)
 
 app.mount('#app')

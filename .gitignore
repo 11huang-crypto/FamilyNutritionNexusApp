@@ -1,42 +1,27 @@
-# Dependencies
+node_modules/
+.venv/
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
+.Python
 
-# IDE
-.vscode/
-.idea/
-
-# Environment
 .env
-.env.local
+*.env.local
 
-# OS
+*.db
+*.sqlite
+
+dist/
+build/
+.vite/
+
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-
-# Build
-dist/
-build/
-*.egg-info/
-
-# Test
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Virtual environments
-venv/
-.env/
-
-# Data
-*.db
-data/
-
-# Temporary files
-*.tmp
-*.temp
+uv.lock

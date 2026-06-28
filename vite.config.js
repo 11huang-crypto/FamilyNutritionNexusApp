@@ -12,13 +12,41 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:3000',
         changeOrigin: true
       },
       '/ws': {
-        target: 'ws://localhost:8080',
+        target: 'ws://localhost:3000',
         changeOrigin: true,
         ws: true
+      },
+      '/auth': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/family': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/health': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/basket': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/meal-plan': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/shopping-list': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      },
+      '/analyze': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
       }
     }
   }

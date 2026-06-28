@@ -53,11 +53,9 @@ const props = defineProps({
   items: {
     type: Array,
     default: () => [
-      { name: 'home', label: '首页', icon: 'wap-home-o', iconActive: 'wap-home', path: '/' },
-      { name: 'basket', label: '菜篮子', icon: 'shopping-cart-o', iconActive: 'shopping-cart', path: '/basket' },
-      { name: 'analyze', label: '识材', icon: 'photo-o', iconActive: 'photo', path: '/analyze' },
-      { name: 'meal', label: '食谱', icon: 'calendar-o', iconActive: 'records', path: '/meal-plan' },
-      { name: 'shopping', label: '清单', icon: 'todo-list-o', iconActive: 'completed', path: '/shopping-list' },
+      { name: 'home', label: '首页', icon: 'home-o', iconActive: 'home', path: '/' },
+      { name: 'analyze', label: 'AI识图', icon: 'camera-o', iconActive: 'camera', path: '/analyze' },
+      { name: 'profile', label: '我的', icon: 'user-o', iconActive: 'user', path: '/profile' },
     ]
   },
   safeArea: { type: Boolean, default: true }

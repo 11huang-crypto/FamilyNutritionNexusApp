@@ -6,12 +6,239 @@
 import axios from '../utils/axios';
 
 /**
- * 图片识别接口
- * POST /api/analyze
- * @param {FormData} formData - 包含图片的 FormData 对象
- * @returns {Promise<Object>} - 识别结果
+ * 用户注册
+ * POST /auth/register
  */
-/** 快速识别（Mock模式下使用，仅需食材名称） */
+export const register = async (data) => {
+  try {
+    const response = await axios.post('/auth/register', data);
+    if (response.access_token) {
+      localStorage.setItem('token', response.access_token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+    }
+    return response;
+  } catch (error) {
+    console.error('注册失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 用户登录
+ * POST /auth/login
+ * 注意：后端使用 OAuth2PasswordRequestForm，需要发送表单格式
+ */
+export const login = async (data) => {
+  try {
+    // 创建表单数据
+    const formData = new URLSearchParams();
+    formData.append('username', data.username);
+    formData.append('password', data.password);
+    
+    const response = await axios.post('/auth/login', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    if (response.access_token) {
+      localStorage.setItem('token', response.access_token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+    }
+    return response;
+  } catch (error) {
+    console.error('登录失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 忘记密码 - 获取验证码
+ * POST /auth/forgot-password
+ */
+export const forgotPassword = async (email) => {
+  try {
+    const response = await axios.post('/auth/forgot-password', { email });
+    return response;
+  } catch (error) {
+    console.error('获取验证码失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 重置密码
+ * POST /auth/reset-password
+ */
+export const resetPassword = async (data) => {
+  try {
+    const response = await axios.post('/auth/reset-password', data);
+    return response;
+  } catch (error) {
+    console.error('重置密码失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 获取当前用户家庭列表
+ * GET /family/my
+ */
+export const getMyFamilies = async () => {
+  try {
+    const response = await axios.get('/family/my');
+    return response;
+  } catch (error) {
+    console.error('获取家庭列表失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 创建家庭
+ * POST /family/create
+ */
+export const createFamily = async (data) => {
+  try {
+    const response = await axios.post('/family/create', data);
+    if (response && response.id) {
+      localStorage.setItem('family_id', response.id.toString());
+    }
+    return response;
+  } catch (error) {
+    console.error('创建家庭失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 添加健康档案
+ * POST /health/profile
+ */
+export const addHealthProfile = async (data) => {
+  try {
+    const response = await axios.post('/health/profile', data);
+    return response;
+  } catch (error) {
+    console.error('添加健康档案失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 获取家庭健康档案
+ * GET /health/family/{family_id}
+ */
+export const getHealthProfiles = async (family_id) => {
+  try {
+    const response = await axios.get(`/health/family/${family_id}`);
+    return response;
+  } catch (error) {
+    console.error('获取健康档案失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 更新健康档案
+ * PUT /health/profile/{profile_id}
+ */
+export const updateHealthProfile = async (profile_id, data) => {
+  try {
+    const response = await axios.put(`/health/profile/${profile_id}`, data);
+    return response;
+  } catch (error) {
+    console.error('更新健康档案失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 删除健康档案
+ * DELETE /health/profile/{profile_id}
+ */
+export const deleteHealthProfile = async (profile_id) => {
+  try {
+    const response = await axios.delete(`/health/profile/${profile_id}`);
+    return response;
+  } catch (error) {
+    console.error('删除健康档案失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 添加菜篮子项目
+ * POST /basket/item
+ */
+export const addBasketItem = async (data) => {
+  try {
+    const response = await axios.post('/basket/item', data);
+    return response;
+  } catch (error) {
+    console.error('添加菜篮子项目失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 获取家庭菜篮子数据
+ * GET /basket/family/{family_id}
+ */
+export const getFamilyBasket = async (family_id) => {
+  try {
+    const response = await axios.get(`/basket/family/${family_id}`);
+    return response;
+  } catch (error) {
+    console.error('获取菜篮子数据失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 检查食材禁忌
+ * GET /basket/check?family_id={family_id}
+ */
+export const checkFoodConflict = async (family_id) => {
+  try {
+    const response = await axios.get(`/basket/check?family_id=${family_id}`);
+    return response;
+  } catch (error) {
+    console.error('检查食材禁忌失败:', error);
+    throw error;
+  }
+};
+
+/** 菜篮子冲突检查（别名） */
+export const checkBasketConflict = checkFoodConflict
+
+/**
+ * 图片识别接口
+ * POST /analyze
+ */
+export const analyzeImage = async (formData) => {
+  if (!(formData instanceof FormData)) {
+    throw new Error('参数必须是 FormData 类型');
+  }
+  if (!formData.has('image')) {
+    throw new Error('FormData 中必须包含 image 字段');
+  }
+  try {
+    const response = await axios.post('/analyze', formData, {
+      headers: {
+        'Content-Type': undefined
+      }
+    });
+    return response;
+  } catch (error) {
+    console.error('图片识别接口调用失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 快速识别（仅需食材名称）
+ * POST /api/analyze
+ */
 export const analyzeFood = async (data) => {
   try {
     const response = await axios.post('/api/analyze', data)
@@ -22,82 +249,16 @@ export const analyzeFood = async (data) => {
   }
 }
 
-export const analyzeImage = async (formData) => {
-  // 校验参数
-  if (!(formData instanceof FormData)) {
-    throw new Error('参数必须是 FormData 类型');
-  }
-  
-  // 检查是否包含图片文件
-  if (!formData.has('image')) {
-    throw new Error('FormData 中必须包含 image 字段');
-  }
-  
-  try {
-    // 发送 POST 请求
-    // 注意：上传文件时不需要手动设置 Content-Type
-    // axios 会自动根据 FormData 设置正确的 Content-Type（包含 boundary）
-    const response = await axios.post('/analyze', formData, {
-      headers: {
-        // 让浏览器自动设置 Content-Type（包含 multipart/form-data 和 boundary）
-        'Content-Type': undefined
-      }
-    });
-    
-    return response;
-  } catch (error) {
-    // 错误已经在 axios 拦截器中处理，这里可以做额外的错误日志记录
-    console.error('图片识别接口调用失败:', error);
-    throw error;
-  }
-};
-
-/**
- * 获取家庭菜篮子数据
- * GET /api/family/basket
- * @returns {Promise<Object>} - 菜篮子数据
- */
-export const getFamilyBasket = async () => {
-  try {
-    const response = await axios.get('/family/basket');
-    return response;
-  } catch (error) {
-    console.error('获取菜篮子数据失败:', error);
-    throw error;
-  }
-};
-
-/**
- * 扫描食材禁忌组合
- * POST /api/basket/check
- * @param {Object} data - 食材列表数据
- * @param {string[]} data.foods - 食材名称数组
- * @returns {Promise<Object>} - 检查结果
- */
-export const checkFoodConflict = async (data) => {
-  try {
-    const response = await axios.post('/basket/check', data);
-    return response;
-  } catch (error) {
-    console.error('检查食材禁忌失败:', error);
-    throw error;
-  }
-};
-
-/** 菜篮子冲突检查（别名，供BasketView调用） */
-export const checkBasketConflict = checkFoodConflict
-
 /**
  * 生成一周食谱
- * POST /api/meal-plan
+ * POST /meal-plan/generate
  * @param {Object} data - 食谱生成参数
- * @param {number} data.days - 天数
- * @param {string} data.preferences - 饮食偏好
+ * @param {number} data.family_id - 家庭ID
  * @returns {Promise<Object>} - 食谱数据
  */
 export const generateMealPlan = async (data) => {
   try {
-    const response = await axios.post('/meal-plan', data);
+    const response = await axios.post('/meal-plan/generate', data);
     return response;
   } catch (error) {
     console.error('生成食谱失败:', error);
@@ -107,12 +268,13 @@ export const generateMealPlan = async (data) => {
 
 /**
  * 获取采购清单
- * GET /api/shopping-list
+ * GET /shopping-list/realtime?family_id={family_id}
+ * @param {number} family_id - 家庭ID
  * @returns {Promise<Object>} - 采购清单数据
  */
-export const getShoppingList = async () => {
+export const getShoppingList = async (family_id) => {
   try {
-    const response = await axios.get('/shopping-list');
+    const response = await axios.get(`/shopping-list/realtime?family_id=${family_id}`);
     return response;
   } catch (error) {
     console.error('获取采购清单失败:', error);
@@ -121,19 +283,60 @@ export const getShoppingList = async () => {
 };
 
 /**
- * WebSocket 管理器
- * 用于采购清单实时协同编辑
+ * 添加采购项
+ * POST /shopping-list/item
+ * @param {Object} data - 采购项数据
+ * @param {number} data.family_id - 家庭ID
+ * @param {string} data.name - 食材名称
+ * @param {number} data.quantity - 数量
+ * @param {string} data.unit - 单位
+ * @returns {Promise<Object>} - 添加的采购项
  */
+export const addShoppingItem = async (data) => {
+  try {
+    const response = await axios.post('/shopping-list/item', data);
+    return response;
+  } catch (error) {
+    console.error('添加采购项失败:', error);
+    throw error;
+  }
+};
+
 /**
- * 默认导出所有API方法
+ * 更新采购项
+ * PUT /shopping-list/item/{item_id}
+ * @param {number} item_id - 采购项ID
+ * @param {Object} data - 更新数据
+ * @param {string} [data.name] - 食材名称
+ * @param {number} [data.quantity] - 数量
+ * @param {string} [data.unit] - 单位
+ * @param {boolean} [data.checked] - 勾选状态
+ * @returns {Promise<Object>} - 更新后的采购项
  */
-export default {
-  analyzeImage,
-  getFamilyBasket,
-  checkFoodConflict,
-  generateMealPlan,
-  getShoppingList,
-  WebSocketManager
+export const updateShoppingItem = async (item_id, data) => {
+  try {
+    const response = await axios.put(`/shopping-list/item/${item_id}`, data);
+    return response;
+  } catch (error) {
+    console.error('更新采购项失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 删除采购项
+ * DELETE /shopping-list/item/{item_id}
+ * @param {number} item_id - 采购项ID
+ * @returns {Promise<Object>} - 删除结果
+ */
+export const deleteShoppingItem = async (item_id) => {
+  try {
+    const response = await axios.delete(`/shopping-list/item/${item_id}`);
+    return response;
+  } catch (error) {
+    console.error('删除采购项失败:', error);
+    throw error;
+  }
 };
 
 /**

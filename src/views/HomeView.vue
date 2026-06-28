@@ -4,26 +4,31 @@
   -->
   <div class="home-page">
     <!-- 顶部导航 -->
-    <AppNavbar title="AI智能菜篮子" :showBack="false" rightIcon="search" />
+    <AppNavbar title="AI智能菜篮子" :showBack="false" />
 
     <!-- 滚动内容区 -->
     <div class="page-body">
       <!-- 家庭成员栏 -->
       <div class="family-bar card-base">
-        <div class="family-info">
-          <h2 class="family-name">{{ store.family.name }}</h2>
-          <span class="family-members">共 {{ store.family.members.length }} 位成员</span>
+        <div class="family-header">
+          <div class="family-info">
+            <h2 class="family-name">{{ store.family.name }}</h2>
+            <span class="family-members">共 {{ store.family.members.length }} 位成员</span>
+          </div>
+          <button class="family-more" @click="$router.push('/profile')">
+            <van-icon name="arrow" size="16" />
+          </button>
         </div>
         <div class="family-avatars">
-          <FamilyAvatar
-            v-for="m in store.family.members"
-            :key="m.id"
-            :member="m"
-            size="md"
-            :showName="true"
-            :editable="true"
-            @avatar-change="handleAvatarChange"
-          />
+          <div v-for="m in store.family.members" :key="m.id" class="family-avatar-item">
+            <div class="avatar-circle">
+              <van-icon name="user" size="20" color="#fff" />
+            </div>
+            <span class="avatar-name">{{ m.name }}</span>
+          </div>
+          <button class="add-avatar-btn" @click="$router.push('/profile')">
+            <van-icon name="plus" size="16" color="#22c55e" />
+          </button>
         </div>
       </div>
 
@@ -82,15 +87,6 @@
         <h3 class="section-label">快捷操作</h3>
       </div>
       <div class="quick-actions grid-2col">
-        <div class="action-card" @click="$router.push('/analyze')">
-          <div class="action-icon" style="background: #dcfce7;">
-            <van-icon name="photo-o" size="24" color="#22c55e" />
-          </div>
-          <div class="action-text">
-            <span class="action-name">拍照识材</span>
-            <span class="action-desc">AI识别+营养分析</span>
-          </div>
-        </div>
         <div class="action-card" @click="$router.push('/meal-plan')">
           <div class="action-icon" style="background: #fff7ed;">
             <van-icon name="description-o" size="24" color="#f97316" />
@@ -109,37 +105,56 @@
             <span class="action-desc">{{ store.pendingShoppingCount }} 项待购</span>
           </div>
         </div>
-        <div class="action-card" @click="$router.push('/demo')">
-          <div class="action-icon" style="background: #fef3c7;">
-            <van-icon name="apps-o" size="24" color="#f59e0b" />
+        <div class="action-card" @click="$router.push('/family-health')">
+          <div class="action-icon" style="background: #fee2e2;">
+            <van-icon name="heart-o" size="24" color="#ef4444" />
           </div>
           <div class="action-text">
-            <span class="action-name">组件展示</span>
-            <span class="action-desc">开发用Demo页</span>
+            <span class="action-name">健康档案</span>
+            <span class="action-desc">管理家庭成员健康</span>
           </div>
         </div>
       </div>
 
       <div style="height: 20px;"></div>
     </div>
+
+    <!-- 底部导航栏 -->
+    <AppTabbar :active="0" @change="handleTabChange" />
   </div>
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores'
 import AppNavbar from '@/components/AppNavbar.vue'
+import AppTabbar from '@/components/AppTabbar.vue'
 import FamilyAvatar from '@/components/FamilyAvatar.vue'
 import AlertBar from '@/components/AlertBar.vue'
 import NutriBadge from '@/components/NutriBadge.vue'
 import VegCard from '@/components/VegCard.vue'
 
 const store = useAppStore()
+const router = useRouter()
+
+/** 页面加载时获取数据 */
+onMounted(() => {
+  store.loadAllData()
+})
 
 /** 用户更换头像 */
 const handleAvatarChange = ({ memberId, dataUrl }) => {
   const member = store.family.members.find(m => m.id === memberId)
   if (member) {
     member.avatar = dataUrl
+  }
+}
+
+/** 底部导航切换 */
+const handleTabChange = (index, item) => {
+  if (item.path) {
+    router.push(item.path)
   }
 }
 
@@ -176,9 +191,22 @@ const getLabel = (key) => {
 
 .family-bar {
   display: flex;
+  flex-direction: column;
+  gap: var(--ab-space-3);
+  margin-bottom: var(--ab-space-3);
+  padding: var(--ab-space-4);
+}
+
+.family-header {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--ab-space-3);
+}
+
+.family-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .family-name {
@@ -192,9 +220,61 @@ const getLabel = (key) => {
   color: var(--ab-text-tertiary);
 }
 
+.family-more {
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: var(--ab-text-tertiary);
+  cursor: pointer;
+}
+
 .family-avatars {
   display: flex;
   align-items: center;
+  gap: var(--ab-space-3);
+  overflow-x: auto;
+  padding-bottom: var(--ab-space-1);
+}
+
+.family-avatar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--ab-radius-full);
+  background: linear-gradient(135deg, var(--ab-primary-400) 0%, var(--ab-primary-600) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-name {
+  font-size: var(--ab-text-xs);
+  color: var(--ab-text-secondary);
+}
+
+.add-avatar-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--ab-radius-full);
+  border: 2px dashed var(--ab-primary-300);
+  background: var(--ab-primary-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all var(--ab-transition-fast);
+
+  &:active {
+    background: var(--ab-primary-100);
+  }
 }
 
 .alerts-area {

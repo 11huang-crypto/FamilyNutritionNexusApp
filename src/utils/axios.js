@@ -8,7 +8,7 @@ import { showToast } from 'vant';
 
 // 创建 axios 实例
 const instance = axios.create({
-  baseURL: '/api',        // 基础URL，配合 Vite 代理
+  baseURL: '/',           // 基础URL，配合 Vite 代理
   timeout: 30000,         // 请求超时时间 30秒
   withCredentials: true   // 携带凭证（如需登录态）
 });
@@ -19,8 +19,17 @@ const instance = axios.create({
  */
 instance.interceptors.request.use(
   (config) => {
-    // 如果是 FormData 类型，不需要设置 Content-Type，浏览器会自动处理
-    if (!(config.data instanceof FormData)) {
+    // 添加 Token 到请求头
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers = {
+        ...config.headers,
+        'Authorization': `Bearer ${token}`
+      }
+    }
+    
+    // 如果是 FormData 或 URLSearchParams 类型，不需要设置 Content-Type，浏览器会自动处理
+    if (!(config.data instanceof FormData) && !(config.data instanceof URLSearchParams)) {
       config.headers = {
         ...config.headers,
         'Content-Type': 'application/json;charset=UTF-8'
@@ -46,7 +55,9 @@ instance.interceptors.response.use(
   (response) => {
     /**
      * 响应成功处理
-     * 后端返回格式：{ code, data, message }
+     * 兼容两种格式：
+     * 1. 后端直接返回数据（如 {"families": [...]}）
+     * 2. 统一格式 { code, data, message }
      */
     const { data } = response;
     
@@ -55,17 +66,20 @@ instance.interceptors.response.use(
       return response;
     }
     
-    // 检查业务状态码
-    if (data.code === 200) {
-      // 成功，返回数据
-      return data;
+    // 检查是否是统一格式 { code, data, message }
+    if (data.code !== undefined) {
+      if (data.code === 200) {
+        return data;
+      } else {
+        showToast({
+          type: 'fail',
+          message: data.message || '操作失败'
+        });
+        return Promise.reject(new Error(data.message || '业务错误'));
+      }
     } else {
-      // 业务错误，显示错误信息
-      showToast({
-        type: 'fail',
-        message: data.message || '操作失败'
-      });
-      return Promise.reject(new Error(data.message || '业务错误'));
+      // 后端直接返回数据格式，直接返回
+      return data;
     }
   },
   (error) => {
@@ -90,13 +104,17 @@ instance.interceptors.response.use(
           });
           break;
         case 401:
-          // 未授权
           showToast({
             type: 'fail',
             message: '请先登录'
           });
-          // 可以在这里跳转到登录页
-          break;
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('family_id');
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 1000);
+          return Promise.reject(new Error('未授权'));
         case 403:
           // 权限不足
           showToast({
