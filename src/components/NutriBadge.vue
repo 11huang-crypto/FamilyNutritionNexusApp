@@ -1,43 +1,24 @@
 <template>
-  <!--
-    组件：NutriBadge 营养标签徽章
-    用途：展示食材的营养成分，多种类型和尺寸
-    Props:
-      - type: 营养类型 'vitamin' | 'fiber' | 'protein' | 'mineral' | 'other'
-      - label: 标签文字
-      - value: 数值
-      - unit: 单位 (默认 mg/g)
-      - size: 尺寸 'sm' | 'md' | 'lg'
-      - showValue: 是否显示数值
-      - percent: 百分比进度 (0-100)，有值时显示进度条
-    Events:
-      - click: 点击时触发
-  -->
   <div
     class="nutri-badge"
     :class="[`is-${type}`, `size-${size}`, { 'has-percent': percent !== null }]"
     @click="$emit('click')"
   >
-    <!-- 图标 -->
-    <span class="badge-icon">
-      <van-icon :name="iconName" :size="iconSize" />
-    </span>
-
-    <!-- 标签文字 -->
-    <span class="badge-label">{{ label }}</span>
-
-    <!-- 数值 -->
-    <span v-if="showValue && value !== undefined" class="badge-value">
+    <!-- 顶部：LocalIcon + 标签 + 数值 -->
+    <div class="badge-top">
+      <span class="badge-icon">
+        <LocalIcon :name="iconName" :size="iconSize" />
+      </span>
+      <span class="badge-label">{{ label }}</span>
+    </div>
+    <div v-if="showValue && value !== undefined" class="badge-value">
       {{ value }}<span class="badge-unit">{{ unit }}</span>
-    </span>
+    </div>
 
-    <!-- 百分比进度条 -->
+    <!-- 进度条 -->
     <div v-if="percent !== null" class="badge-progress">
       <div class="progress-track">
-        <div
-          class="progress-fill"
-          :style="{ width: clampedPercent + '%' }"
-        ></div>
+        <div class="progress-fill" :style="{ width: clampedPercent + '%' }"></div>
       </div>
       <span class="progress-text">{{ clampedPercent }}%</span>
     </div>
@@ -45,48 +26,49 @@
 </template>
 
 <script setup>
-/**
- * NutriBadge - 营养标签徽章
- * 颜色编码系统：维生素=青绿，纤维=橙黄，蛋白质=蓝紫，矿物质=靛蓝
- */
 import { computed } from 'vue'
 
 const props = defineProps({
   type: {
     type: String,
     default: 'other',
-    validator: v => ['vitamin', 'fiber', 'protein', 'mineral', 'other'].includes(v)
+    validator: v => ['vitamin', 'fiber', 'protein', 'mineral', 'iron', 'calcium', 'other'].includes(v)
   },
   label: { type: String, required: true },
   value: { type: [Number, String], default: undefined },
   unit: { type: String, default: 'mg' },
-  size: {
-    type: String,
-    default: 'md',
-    validator: v => ['sm', 'md', 'lg'].includes(v)
-  },
+  size: { type: String, default: 'md', validator: v => ['sm', 'md', 'lg'].includes(v) },
   showValue: { type: Boolean, default: true },
   percent: { type: Number, default: null }
 })
 
 const emit = defineEmits(['click'])
 
-// 图标映射
-const iconMap = {
-  vitamin: 'gem-o',
-  fiber: 'flower-o',
-  protein: 'fire-o',
-  mineral: 'diamond-o',
-  other: 'label-o'
+const emojiMap = {
+  protein: '🥩',
+  vitamin: '🍊',
+  vitaminC: '🍊',
+  fiber: '🥦',
+  mineral: '🪨',
+  iron: '🩸',
+  calcium: '🥛',
+  other: '📊'
 }
 
-const iconName = computed(() => iconMap[props.type] || 'label-o')
+// 用 41 个本地 PNG 替代 emoji（颜色、风格统一）
+const iconNameMap = {
+  protein: 'fire-o',        // 蛋白质 → 火焰
+  vitamin: 'VC',            // 维C → 维生素C专用图标（用户指定 2026-06-30）
+  vitaminC: 'VC',
+  fiber: 'flower-o-veggie', // 纤维 → 蔬菜花
+  mineral: 'gem-o',         // 矿物 → 宝石
+  iron: 'gem-o',            // 铁 → 橙色宝石（用户指定 2026-06-30）
+  calcium: 'diamond-o',     // 钙 → 钻石（用户指定）
+  other: 'info-o',          // 其他 → 信息
+}
+const iconName = computed(() => iconNameMap[props.type] || 'info-o')
+const iconSize = computed(() => props.size === 'lg' ? 20 : 18)
 
-// 图标尺寸
-const iconSizeMap = { sm: 12, md: 14, lg: 16 }
-const iconSize = computed(() => iconSizeMap[props.size] || 14)
-
-// 百分比限制
 const clampedPercent = computed(() => {
   if (props.percent === null) return 0
   return Math.min(100, Math.max(0, props.percent))
@@ -95,148 +77,158 @@ const clampedPercent = computed(() => {
 
 <style scoped lang="scss">
 .nutri-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border-radius: var(--ab-radius-sm);
-  font-weight: var(--ab-font-medium);
-  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: var(--ab-shadow-float-sm);
+  border: 1px solid var(--ab-border-subtle);
+  transition: all var(--ab-transition-normal);
   cursor: default;
-  transition: all var(--ab-transition-fast);
 
-  &:active {
-    transform: scale(0.95);
-  }
+  &:active { transform: scale(0.97); box-shadow: var(--ab-shadow-press); }
 
-  /* ========== 类型配色 ========== */
+  /* 类型配色 — emoji 容器彩色 Clay 底 */
   &.is-vitamin {
-    background: #e8f5e9;
-    color: #2e7d32;
-    .badge-icon { color: #4caf50; }
-    .progress-fill { background: linear-gradient(90deg, #81c784, #4caf50); }
-  }
-
-  &.is-fiber {
-    background: #fff3e0;
-    color: #e65100;
-    .badge-icon { color: #ff9800; }
-    .progress-fill { background: linear-gradient(90deg, #ffb74d, #ff9800); }
-  }
-
-  &.is-protein {
-    background: #f3e5f5;
-    color: #7b1fa2;
-    .badge-icon { color: #9c27b0; }
-    .progress-fill { background: linear-gradient(90deg, #ce93d8, #9c27b0); }
-  }
-
-  &.is-mineral {
-    background: #e3f2fd;
-    color: #1565c0;
-    .badge-icon { color: #2196f3; }
-    .progress-fill { background: linear-gradient(90deg, #90caf9, #2196f3); }
-  }
-
-  &.is-other {
-    background: var(--ab-gray-100);
-    color: var(--ab-gray-600);
-    .badge-icon { color: var(--ab-gray-500); }
-    .progress-fill { background: linear-gradient(90deg, var(--ab-gray-400), var(--ab-gray-500)); }
-  }
-
-  /* ========== 尺寸变体 ========== */
-  &.size-sm {
-    padding: 2px 8px;
-    font-size: var(--ab-text-xs);
-    border-radius: var(--ab-radius-sm);
-  }
-
-  &.size-md {
-    padding: 4px 10px;
-    font-size: var(--ab-text-sm);
-    border-radius: var(--ab-radius-md);
-  }
-
-  &.size-lg {
-    padding: 6px 14px;
-    font-size: var(--ab-text-base);
-    border-radius: var(--ab-radius-lg);
-  }
-
-  /* ========== 带进度条模式 ========== */
-  &.has-percent {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
-    padding: var(--ab-space-3);
-    background: var(--ab-bg-card);
-    border: 1px solid var(--ab-border-light);
-    box-shadow: var(--ab-shadow-sm);
-    border-radius: var(--ab-radius-md);
-
     .badge-icon {
-      align-self: flex-start;
+      background: linear-gradient(135deg, var(--ab-orange-200) 0%, var(--ab-orange-400) 100%);
+      box-shadow: 0 4px 10px rgba(249, 115, 22, 0.25);
     }
-
-    .badge-label {
-      font-size: var(--ab-text-sm);
-      font-weight: var(--ab-font-bold);
-    }
-
-    .badge-value {
-      font-size: var(--ab-text-xl);
-      font-weight: var(--ab-font-bold);
-      color: var(--ab-text-primary);
-    }
+    .badge-value { color: var(--ab-orange-600); }
+    .progress-fill { background: linear-gradient(90deg, var(--ab-orange-300), var(--ab-orange-500)); }
   }
+  &.is-fiber {
+    .badge-icon {
+      background: linear-gradient(135deg, var(--ab-mint-200) 0%, var(--ab-mint-400) 100%);
+      box-shadow: 0 4px 10px rgba(27, 196, 101, 0.25);
+    }
+    .badge-value { color: var(--ab-mint-600); }
+    .progress-fill { background: linear-gradient(90deg, var(--ab-mint-300), var(--ab-mint-500)); }
+  }
+  &.is-protein {
+    .badge-icon {
+      background: linear-gradient(135deg, var(--ab-peach-200) 0%, var(--ab-peach-400) 100%);
+      box-shadow: 0 4px 10px rgba(255, 107, 53, 0.25);
+    }
+    .badge-value { color: var(--ab-peach-600); }
+    .progress-fill { background: linear-gradient(90deg, var(--ab-peach-300), var(--ab-peach-500)); }
+  }
+  &.is-mineral, &.is-iron {
+    .badge-icon {
+      background: linear-gradient(135deg, var(--ab-blue-200) 0%, var(--ab-blue-400) 100%);
+      box-shadow: 0 4px 10px rgba(59, 135, 240, 0.25);
+    }
+    .badge-value { color: var(--ab-blue-600); }
+    .progress-fill { background: linear-gradient(90deg, var(--ab-blue-300), var(--ab-blue-500)); }
+  }
+  &.is-calcium {
+    .badge-icon {
+      background: linear-gradient(135deg, var(--ab-lilac-200) 0%, var(--ab-lilac-400) 100%);
+      box-shadow: 0 4px 10px rgba(129, 95, 240, 0.25);
+    }
+    .badge-value { color: var(--ab-lilac-600); }
+    .progress-fill { background: linear-gradient(90deg, var(--ab-lilac-300), var(--ab-lilac-500)); }
+  }
+  &.is-other {
+    .badge-icon {
+      background: linear-gradient(135deg, var(--ab-gray-100) 0%, var(--ab-gray-300) 100%);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+    .badge-value { color: var(--ab-gray-700); }
+    .progress-fill { background: linear-gradient(90deg, var(--ab-gray-300), var(--ab-gray-500)); }
+  }
+
+  /* 尺寸 */
+  &.size-sm { padding: 8px; border-radius: 14px; }
+  &.size-md { padding: 10px; border-radius: 16px; }
+  &.size-lg { padding: 12px; border-radius: 18px; }
+}
+
+.badge-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .badge-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.badge-label {
+.emoji-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
   line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+}
+
+/* LocalIcon 在 .badge-icon (28×28 圆角方块) 内垂直水平居中 */
+.badge-icon {
+  padding: 0;
+}
+.badge-icon :deep(.local-icon) {
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+}
+
+.badge-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ab-text-primary);
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
 .badge-value {
+  font-size: 18px;
+  font-weight: 700;
   line-height: 1;
+  letter-spacing: -0.02em;
 }
-
 .badge-unit {
-  font-size: 0.75em;
-  margin-left: 1px;
+  font-size: 0.6em;
+  margin-left: 2px;
   opacity: 0.7;
+  font-weight: 600;
 }
 
 .badge-progress {
   display: flex;
   align-items: center;
-  gap: var(--ab-space-2);
+  gap: 6px;
 }
 
 .progress-track {
   flex: 1;
   height: 6px;
-  background: var(--ab-gray-200);
-  border-radius: var(--ab-radius-full);
+  background: var(--ab-gray-100);
+  border-radius: 9999px;
   overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .progress-fill {
   height: 100%;
-  border-radius: var(--ab-radius-full);
+  border-radius: 9999px;
   transition: width 0.6s var(--ab-ease-smooth);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .progress-text {
-  font-size: var(--ab-text-xs);
+  font-size: 10px;
   color: var(--ab-text-tertiary);
-  font-weight: var(--ab-font-bold);
-  min-width: 32px;
+  font-weight: 700;
+  min-width: 28px;
   text-align: right;
 }
 </style>

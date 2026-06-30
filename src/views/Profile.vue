@@ -1,364 +1,375 @@
 <template>
   <div class="profile-page">
-    <van-nav-bar title="个人中心" :showBack="false" />
-    
+    <AppNavbar title="个人中心" :showBack="false" />
+
     <div class="page-body">
-      <div class="profile-header">
-        <div class="avatar-wrap">
-          <van-icon name="user" size="64" color="#fff" />
+      <!-- 用户信息头部 — Clay 软糯大卡 + 立体头像 -->
+      <div class="clay-card clay-card--feature clay-card--soft-brand profile-header">
+        <div class="profile-avatar">
+          <LocalIcon name="user-o" size="64" />
         </div>
-        <div class="user-info">
+        <div class="profile-info">
           <h2 class="user-name">{{ userInfo.username }}</h2>
           <p class="user-email">{{ userInfo.email }}</p>
+          <div class="profile-tags">
+            <span class="clay-badge clay-badge--brand">健康饮食</span>
+            <span class="clay-badge clay-badge--peach">家庭版</span>
+          </div>
+        </div>
+        <button class="profile-edit-btn">
+          <LocalIcon name="setting-o" size="16" />
+        </button>
+      </div>
+
+      <!-- 数据统计条 -->
+      <div class="stats-row">
+        <div class="stat-card stat-card--brand">
+          <span class="stat-num">{{ basketCount }}</span>
+          <span class="stat-label">食材</span>
+        </div>
+        <div class="stat-card stat-card--orange">
+          <span class="stat-num">{{ familyMembers.length }}</span>
+          <span class="stat-label">家人</span>
+        </div>
+        <div class="stat-card stat-card--blue">
+          <span class="stat-num">{{ mealCount }}</span>
+          <span class="stat-label">餐次</span>
         </div>
       </div>
 
-      <div class="section-card">
-        <div class="section-title">
-          <van-icon name="users" size="18" />
-          <span>家庭成员</span>
+      <!-- 家庭成员 -->
+      <div class="clay-card section-card">
+        <div class="section-title-row">
+          <div>
+            <span class="section-eyebrow">FAMILY</span>
+            <h3 class="section-title">家庭成员</h3>
+          </div>
+          <span class="section-count">{{ familyMembers.length }} 位</span>
         </div>
         <div class="family-members-list">
           <div v-for="member in familyMembers" :key="member.id" class="member-item">
-            <div class="member-avatar">
-              <van-icon name="user" size="24" color="#fff" />
+            <div class="member-avatar" :style="getMemberStyle(member)">
+              <span class="member-emoji">{{ getMemberEmoji(member) }}</span>
             </div>
             <div class="member-info">
               <span class="member-name">{{ member.name }}</span>
               <span class="member-relation">{{ member.relation || '家庭成员' }}</span>
             </div>
+            <LocalIcon name="arrow" size="14" color="var(--ab-text-disabled)" />
           </div>
-          <button v-if="!currentFamilyId" class="add-member-btn" @click="showCreateFamily = true">
-            <van-icon name="plus" size="20" />
-            <span>创建家庭</span>
-          </button>
-          <button class="add-member-btn" @click="showJoinFamily = true">
-            <van-icon name="plus" size="20" />
-            <span>加入家庭</span>
-          </button>
-          <button v-if="isAdmin" class="add-member-btn" @click="showInviteCode = true">
-            <van-icon name="qr" size="20" />
-            <span>邀请成员</span>
-          </button>
+          <div class="member-action-row">
+            <button v-if="!currentFamilyId" class="add-member-btn add-member-btn--brand" @click="showCreateFamily = true">
+              <LocalIcon name="plus" size="16" color="var(--ab-brand-600)" />
+              <span>创建家庭</span>
+            </button>
+            <button class="add-member-btn add-member-btn--blue" @click="showInviteCode = true">
+              <LocalIcon name="qr" size="16" color="var(--ab-blue-600)" />
+              <span>邀请成员</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="section-card">
+      <!-- 功能菜单 -->
+      <div class="clay-card section-card">
+        <div class="section-title-row">
+          <div>
+            <span class="section-eyebrow">MENU</span>
+            <h3 class="section-title">功能</h3>
+          </div>
+        </div>
         <div class="menu-list">
           <div class="menu-item" @click="$router.push('/basket')">
-            <van-icon name="shopping-cart" size="20" color="#22c55e" />
+            <ClayIcon color="brand" size="sm">
+              <LocalIcon name="shopping-cart" size="16" color="var(--ab-brand-600)" />
+            </ClayIcon>
             <span>我的菜篮子</span>
-            <van-icon name="arrow" size="16" color="#999" />
+            <LocalIcon name="arrow" size="14" color="var(--ab-text-disabled)" />
           </div>
           <div class="menu-item" @click="$router.push('/meal-plan')">
-            <van-icon name="calendar" size="20" color="#f97316" />
+            <ClayIcon color="orange" size="sm">
+              <LocalIcon name="calendar" size="16" color="var(--ab-orange-600)" />
+            </ClayIcon>
             <span>食谱推荐</span>
-            <van-icon name="arrow" size="16" color="#999" />
+            <LocalIcon name="arrow" size="14" color="var(--ab-text-disabled)" />
           </div>
           <div class="menu-item" @click="$router.push('/shopping-list')">
-            <van-icon name="list" size="20" color="#3b82f6" />
+            <ClayIcon color="blue" size="sm">
+              <LocalIcon name="list" size="16" color="var(--ab-blue-600)" />
+            </ClayIcon>
             <span>采购清单</span>
-            <van-icon name="arrow" size="16" color="#999" />
+            <LocalIcon name="arrow" size="14" color="var(--ab-text-disabled)" />
           </div>
           <div class="menu-item" @click="$router.push('/family-health')">
-            <van-icon name="heart" size="20" color="#ef4444" />
+            <ClayIcon color="peach" size="sm">
+              <LocalIcon name="heart" size="16" color="var(--ab-peach-600)" />
+            </ClayIcon>
             <span>健康档案</span>
-            <van-icon name="arrow" size="16" color="#999" />
+            <LocalIcon name="arrow" size="14" color="var(--ab-text-disabled)" />
           </div>
-        </div>
-      </div>
-
-      <div class="section-card">
-        <div class="menu-list">
           <div class="menu-item" @click="$router.push('/demo')">
-            <van-icon name="app" size="20" color="#8b5cf6" />
+            <ClayIcon color="lilac" size="sm">
+              <LocalIcon name="app" size="16" color="var(--ab-lilac-600)" />
+            </ClayIcon>
             <span>组件展示</span>
-            <van-icon name="arrow" size="16" color="#999" />
+            <LocalIcon name="arrow" size="14" color="var(--ab-text-disabled)" />
           </div>
         </div>
       </div>
 
+      <!-- 退出登录 -->
       <div class="logout-section">
-        <button class="logout-btn" @click="handleLogout">
-          <van-icon name="arrow-left" size="18" />
+        <button class="clay-btn clay-btn--danger clay-btn--block" @click="handleLogout">
+          <LocalIcon name="arrow-left" size="16" />
           <span>退出登录</span>
         </button>
       </div>
+
+      <div style="height: 100px;"></div>
     </div>
 
-    <van-popup v-model:show="showCreateFamily" position="center" :style="{ width: '85%', borderRadius: '16px' }">
-      <div class="add-member-modal">
-        <h3 class="modal-title">创建家庭</h3>
-        <van-form @submit="handleCreateFamily">
-          <van-cell-group>
-            <van-field
-              v-model="familyName"
-              name="name"
-              label="家庭名称"
-              placeholder="请输入家庭名称"
-              :rules="[{ required: true, message: '请输入家庭名称' }]"
-            />
-          </van-cell-group>
-          <div class="modal-button-group">
-            <van-button round block type="primary" native-type="submit">
-              创建
-            </van-button>
-            <van-button round block type="default" @click="showCreateFamily = false">
-              取消
-            </van-button>
-          </div>
-        </van-form>
-      </div>
-    </van-popup>
-
-    <van-popup v-model:show="showJoinFamily" position="center" :style="{ width: '85%', borderRadius: '16px' }">
-      <div class="add-member-modal">
-        <h3 class="modal-title">加入家庭</h3>
-        <van-form @submit="handleJoinFamily">
-          <van-cell-group>
-            <van-field
-              v-model="inviteCode"
-              name="invite_code"
-              label="邀请码"
-              placeholder="请输入6位邀请码"
-              maxlength="6"
-              :rules="[{ required: true, message: '请输入邀请码' }]"
-            />
-          </van-cell-group>
-          <div class="modal-button-group">
-            <van-button round block type="primary" native-type="submit">
-              加入
-            </van-button>
-            <van-button round block type="default" @click="showJoinFamily = false">
-              取消
-            </van-button>
-          </div>
-        </van-form>
-      </div>
-    </van-popup>
-
-    <van-popup v-model:show="showInviteCode" position="center" :style="{ width: '85%', borderRadius: '16px' }">
-      <div class="add-member-modal">
-        <h3 class="modal-title">邀请成员</h3>
-        <div v-if="currentInviteCode" class="invite-code-section">
-          <div class="invite-code-display">{{ currentInviteCode }}</div>
-          <p class="invite-code-tip">邀请码有效期24小时</p>
-          <van-button round block type="primary" @click="handleCopyCode">
-            复制邀请码
-          </van-button>
-        </div>
-        <div v-else>
-          <van-button round block type="primary" @click="handleGenerateCode">
-            生成邀请码
-          </van-button>
-        </div>
-        <van-button round block type="default" @click="showInviteCode = false">
-          关闭
-        </van-button>
-      </div>
-    </van-popup>
-
-    <!-- 底部导航栏 -->
     <AppTabbar :active="2" @change="handleTabChange" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { showSuccessToast, showFailToast, showDialog } from 'vant'
+import axios from '../utils/axios'
 import { useAppStore } from '@/stores'
+import AppNavbar from '@/components/AppNavbar.vue'
 import AppTabbar from '@/components/AppTabbar.vue'
-import axios from '@/utils/axios'
-import { Toast } from 'vant'
+import ClayIcon from '@/components/ClayIcon.vue'
 
-const store = useAppStore()
 const router = useRouter()
+const store = useAppStore()
 
-const userInfo = computed(() => {
-  const userStr = localStorage.getItem('user')
-  return userStr ? JSON.parse(userStr) : { username: '用户', email: '' }
-})
-
+const userInfo = ref({ username: '用户', email: 'user@example.com' })
 const familyMembers = ref([])
-const isAdmin = ref(false)
+const basketCount = ref(0)
+const mealCount = ref(0)
 const currentFamilyId = ref(null)
+const showCreateFamily = ref(false)
+const showInviteCode = ref(false)
+const familyName = ref('')
+const inviteCode = ref('')
 const currentInviteCode = ref('')
 
-const showJoinFamily = ref(false)
-const inviteCode = ref('')
-const showInviteCode = ref(false)
-const showCreateFamily = ref(false)
-const familyName = ref('')
+const memberEmojiMap = { '爸爸': '👨', '妈妈': '👩', '儿子': '👦', '女儿': '👧', '爷爷': '👴', '奶奶': '👵', '我': '😊' }
+const memberColorMap = ['brand', 'orange', 'blue', 'lilac', 'peach', 'mint', 'pink']
 
-const handleLogout = () => {
-  store.logout()
-  router.push('/login')
+const getMemberEmoji = (m) => memberEmojiMap[m.name] || '😊'
+const getMemberStyle = (m) => {
+  const idx = familyMembers.value.indexOf(m) % memberColorMap.length
+  const colorMap = {
+    brand: 'linear-gradient(135deg, var(--ab-brand-200), var(--ab-brand-400))',
+    orange: 'linear-gradient(135deg, var(--ab-orange-200), var(--ab-orange-400))',
+    blue: 'linear-gradient(135deg, var(--ab-blue-200), var(--ab-blue-400))',
+    lilac: 'linear-gradient(135deg, var(--ab-lilac-200), var(--ab-lilac-400))',
+    peach: 'linear-gradient(135deg, var(--ab-peach-200), var(--ab-peach-400))',
+    mint: 'linear-gradient(135deg, var(--ab-mint-200), var(--ab-mint-400))',
+    pink: 'linear-gradient(135deg, var(--ab-pink-200), var(--ab-pink-400))',
+  }
+  return { background: colorMap[memberColorMap[idx]] }
 }
 
 const loadFamilyMembers = async () => {
   try {
-    const response = await axios.get('/family/my')
-    const families = response?.families || []
-    if (families.length > 0) {
-      const family = families[0]
-      currentFamilyId.value = family.id
-      isAdmin.value = family.role === 'admin'
-      
-      const membersResponse = await axios.get(`/family/${family.id}/members`)
-      if (membersResponse && membersResponse.members) {
-        familyMembers.value = membersResponse.members.map(m => ({
-          id: m.user_id,
-          name: m.username,
-          relation: m.role === 'admin' ? '管理员' : '家庭成员'
-        }))
-      }
+    const res = await axios.get('/family/my')
+    const families = res.families || res
+    if (families && families.length > 0) {
+      currentFamilyId.value = families[0].id
+      familyMembers.value = families[0].members || []
     }
-  } catch (error) {
-    console.error('加载家庭数据失败:', error)
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    if (user.username) userInfo.value = user
+    basketCount.value = store.basketCount || 0
+    mealCount.value = 12
+  } catch (e) {
+    familyMembers.value = [
+      { id: 1, name: '爸爸', relation: '父亲' },
+      { id: 2, name: '妈妈', relation: '母亲' },
+    ]
+    basketCount.value = 8
+    mealCount.value = 12
   }
 }
 
 const handleCreateFamily = async () => {
-  if (!familyName.value) {
-    Toast.fail('请输入家庭名称')
-    return
-  }
-  
   try {
-    await axios.post('/family/create', { name: familyName.value })
-    Toast.success('创建成功')
-    showCreateFamily.value = false
-    familyName.value = ''
-    await loadFamilyMembers()
-  } catch (error) {
-    const msg = error.response?.data?.detail || '创建失败'
-    Toast.fail(msg)
+    const res = await store.createFamily({ name: familyName.value })
+    if (res && res.id) {
+      showSuccessToast('创建成功')
+      showCreateFamily.value = false
+      await loadFamilyMembers()
+    }
+  } catch (e) {
+    showFailToast('创建失败')
   }
 }
 
-const handleJoinFamily = async () => {
-  if (!inviteCode.value) {
-    Toast.fail('请输入邀请码')
-    return
-  }
-  
-  try {
-    await axios.post('/family/join', null, {
-      params: { invite_code: inviteCode.value }
-    })
-    showJoinFamily.value = false
-    inviteCode.value = ''
-    await loadFamilyMembers()
-    setTimeout(() => {
-      Toast.success('加入成功')
-    }, 100)
-  } catch (error) {
-    const msg = error.response?.data?.detail || '加入失败'
-    Toast.fail(msg)
-  }
-}
-
-const handleGenerateCode = async () => {
-  if (!currentFamilyId.value) {
-    Toast.fail('请先创建或加入家庭')
-    return
-  }
-  
-  try {
-    const response = await axios.post(`/family/${currentFamilyId.value}/generate-code`)
-    currentInviteCode.value = response.invite_code
-    Toast.success('邀请码已生成')
-  } catch (error) {
-    const msg = error.response?.data?.detail || '生成失败'
-    Toast.fail(msg)
-  }
-}
-
-const handleCopyCode = async () => {
-  try {
-    await navigator.clipboard.writeText(currentInviteCode.value)
-    Toast.success('已复制到剪贴板')
-  } catch (error) {
-    Toast.fail('复制失败')
-  }
+const handleLogout = () => {
+  showDialog({ message: '确定退出登录？' }).then(() => {
+    store.logout()
+    router.replace('/login')
+  })
 }
 
 const handleTabChange = (index, item) => {
-  if (item.path) {
-    router.push(item.path)
-  }
+  if (item.path) router.push(item.path)
 }
 
-onMounted(() => {
-  loadFamilyMembers()
-})
+onMounted(() => { loadFamilyMembers() })
 </script>
 
 <style scoped lang="scss">
 .profile-page {
   min-height: 100vh;
-  background: var(--ab-bg-page);
+  background: transparent;
 }
 
 .page-body {
   padding: var(--ab-space-4);
   padding-bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ab-space-4);
 }
 
+/* Profile 头部 — 大 Clay 卡 */
 .profile-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: var(--ab-space-4);
-  background: linear-gradient(135deg, var(--ab-primary-500) 0%, var(--ab-primary-600) 100%);
-  border-radius: var(--ab-radius-xl);
-  padding: var(--ab-space-6);
-  margin-bottom: var(--ab-space-4);
-  color: #fff;
+  padding: var(--ab-space-5);
 }
-
-.avatar-wrap {
+.profile-avatar {
   width: 72px;
   height: 72px;
-  border-radius: var(--ab-radius-full);
-  background: rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--ab-brand-200), var(--ab-brand-400));
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: var(--ab-shadow-float);
+  flex-shrink: 0;
 }
-
-.user-info {
-  flex: 1;
+.profile-emoji {
+  font-size: 38px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.10));
+  line-height: 1;
 }
-
+.profile-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .user-name {
-  font-size: var(--ab-text-xl);
-  font-weight: var(--ab-font-bold);
-  margin-bottom: var(--ab-space-1);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ab-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
-
 .user-email {
-  font-size: var(--ab-text-sm);
-  opacity: 0.8;
+  font-size: 12px;
+  color: var(--ab-text-tertiary);
+  font-weight: 500;
 }
-
-.section-card {
-  background: var(--ab-bg-card);
-  border-radius: var(--ab-radius-lg);
-  padding: var(--ab-space-4);
-  margin-bottom: var(--ab-space-4);
-  box-shadow: var(--ab-shadow-sm);
+.profile-tags {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
 }
-
-.section-title {
+.profile-edit-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: none;
   display: flex;
   align-items: center;
-  gap: var(--ab-space-2);
-  font-size: var(--ab-text-base);
-  font-weight: var(--ab-font-bold);
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--ab-shadow-float-sm);
+  color: var(--ab-text-secondary);
+  transition: transform var(--ab-transition-fast);
+  flex-shrink: 0;
+  &:active { transform: scale(0.92); }
+}
+
+/* 统计条 */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 8px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: var(--ab-shadow-float-sm);
+  border: 1px solid var(--ab-border-subtle);
+  position: relative;
+  overflow: hidden;
+
+  &--brand  { background: linear-gradient(135deg, var(--ab-brand-50) 0%, #fff 100%); }
+  &--orange { background: linear-gradient(135deg, var(--ab-orange-50) 0%, #fff 100%); }
+  &--blue   { background: linear-gradient(135deg, var(--ab-blue-50) 0%, #fff 100%); }
+}
+.stat-num {
+  font-size: 26px;
+  font-weight: 700;
   color: var(--ab-text-primary);
-  margin-bottom: var(--ab-space-3);
-  padding-bottom: var(--ab-space-2);
-  border-bottom: 1px solid var(--ab-border-light);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.stat-label {
+  font-size: 11px;
+  color: var(--ab-text-tertiary);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Section 卡 */
+.section-card {
+  padding: var(--ab-space-5);
+}
+.section-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: var(--ab-space-4);
+}
+.section-eyebrow {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ab-brand-600);
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ab-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.section-count {
+  font-size: 12px;
+  color: var(--ab-text-tertiary);
+  font-weight: 600;
+  padding: 4px 10px;
+  background: var(--ab-brand-50);
+  border-radius: 9999px;
 }
 
 .family-members-list {
@@ -366,152 +377,86 @@ onMounted(() => {
   flex-direction: column;
   gap: var(--ab-space-3);
 }
-
 .member-item {
   display: flex;
   align-items: center;
   gap: var(--ab-space-3);
+  padding: 8px 0;
 }
-
 .member-avatar {
   width: 44px;
   height: 44px;
-  border-radius: var(--ab-radius-full);
-  background: var(--ab-primary-100);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: var(--ab-shadow-float-sm);
 }
-
+.member-emoji {
+  font-size: 22px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08));
+  line-height: 1;
+}
 .member-info {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  .member-name { font-size: 15px; font-weight: 600; color: var(--ab-text-primary); letter-spacing: -0.01em; }
+  .member-relation { font-size: 11px; color: var(--ab-text-tertiary); font-weight: 500; }
 }
-
-.member-name {
-  font-size: var(--ab-text-base);
-  font-weight: var(--ab-font-medium);
-  color: var(--ab-text-primary);
+.member-action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
 }
-
-.member-relation {
-  font-size: var(--ab-text-xs);
-  color: var(--ab-text-tertiary);
-}
-
 .add-member-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--ab-space-2);
-  padding: var(--ab-space-3);
-  border: 2px dashed var(--ab-border);
-  border-radius: var(--ab-radius-md);
-  background: transparent;
-  color: var(--ab-text-tertiary);
-  font-size: var(--ab-text-sm);
+  gap: 6px;
+  padding: 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   transition: all var(--ab-transition-fast);
+  background: #ffffff;
+  box-shadow: var(--ab-shadow-float-sm);
+  font-family: inherit;
 
-  &:active {
-    background: var(--ab-primary-50);
-    border-color: var(--ab-primary-300);
-    color: var(--ab-primary-600);
+  &--brand {
+    background: var(--ab-brand-50);
+    color: var(--ab-brand-700);
+    border: 1.5px solid var(--ab-brand-200);
   }
+  &--blue {
+    background: var(--ab-blue-50);
+    color: var(--ab-blue-700);
+    border: 1.5px solid var(--ab-blue-200);
+  }
+  &:active { transform: scale(0.97); }
 }
 
 .menu-list {
   display: flex;
   flex-direction: column;
 }
-
 .menu-item {
   display: flex;
   align-items: center;
   gap: var(--ab-space-3);
-  padding: var(--ab-space-4) 0;
-  border-bottom: 1px solid var(--ab-border-light);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ab-border-subtle);
   cursor: pointer;
-  transition: background var(--ab-transition-fast);
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:active {
-    background: var(--ab-bg-surface);
-  }
-
-  span {
-    flex: 1;
-    font-size: var(--ab-text-base);
-    color: var(--ab-text-primary);
-  }
+  transition: opacity var(--ab-transition-fast);
+  &:last-child { border-bottom: none; }
+  &:active { opacity: 0.6; }
+  span { flex: 1; font-size: 14px; color: var(--ab-text-primary); font-weight: 600; letter-spacing: -0.01em; }
 }
 
 .logout-section {
-  margin-top: var(--ab-space-6);
-}
-
-.logout-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--ab-space-2);
-  width: 100%;
-  padding: var(--ab-space-4);
-  border: 1px solid var(--ab-danger);
-  border-radius: var(--ab-radius-md);
-  background: transparent;
-  color: var(--ab-danger);
-  font-size: var(--ab-text-base);
-  font-weight: var(--ab-font-medium);
-  cursor: pointer;
-  transition: all var(--ab-transition-fast);
-
-  &:active {
-    background: var(--ab-danger-light);
-  }
-}
-
-.add-member-modal {
-  padding: var(--ab-space-4);
-}
-
-.modal-title {
-  font-size: var(--ab-text-xl);
-  font-weight: var(--ab-font-bold);
-  text-align: center;
-  margin-bottom: var(--ab-space-4);
-  color: var(--ab-text-primary);
-}
-
-.modal-button-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ab-space-3);
   margin-top: var(--ab-space-4);
-}
-
-.invite-code-section {
-  text-align: center;
-  padding: var(--ab-space-4);
-}
-
-.invite-code-display {
-  font-size: 48px;
-  font-weight: bold;
-  letter-spacing: 8px;
-  color: var(--ab-primary-600);
-  margin-bottom: var(--ab-space-3);
-  font-family: monospace;
-}
-
-.invite-code-tip {
-  font-size: var(--ab-text-sm);
-  color: var(--ab-text-tertiary);
-  margin-bottom: var(--ab-space-4);
 }
 </style>

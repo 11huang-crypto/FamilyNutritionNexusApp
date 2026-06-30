@@ -31,7 +31,7 @@
             @click="handleBack"
             aria-label="返回"
           >
-            <van-icon name="arrow-left" size="20" />
+            <LocalIcon name="arrow-left" size="20" />
           </button>
         </slot>
       </div>
@@ -58,7 +58,7 @@
             class="nav-btn nav-icon-btn"
             @click="$emit('right-click')"
           >
-            <van-icon :name="rightIcon" size="20" />
+            <LocalIcon :name="rightIcon" size="20" />
           </button>
         </slot>
       </div>
@@ -108,7 +108,10 @@ const handleBack = () => {
 .app-navbar {
   position: relative;
   z-index: 100;
-  background: var(--ab-bg-elevated);
+  background: rgba(255, 255, 255, 0.55);  /* 毛玻璃：透出粒子 */
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
   transition: background var(--ab-transition-fast);
 
   &.is-sticky {
@@ -200,7 +203,7 @@ const handleBack = () => {
   padding: 0 var(--ab-space-3);
   font-size: var(--ab-text-sm);
   font-weight: var(--ab-font-medium);
-  color: var(--ab-primary-600);
+  color: var(--ab-brand-600);
 }
 
 .navbar-progress {
@@ -215,7 +218,7 @@ const handleBack = () => {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--ab-primary-400), var(--ab-primary-600));
+  background: linear-gradient(90deg, var(--ab-brand-400), var(--ab-brand-600));
   transition: width 0.3s var(--ab-ease-smooth);
 }
 </style>

@@ -1,23 +1,5 @@
 <template>
-  <!--
-    组件：AppTabbar 底部Tab栏
-    用途：APP底部导航，支持徽标、动画切换
-    Props:
-      - active: 当前激活项的索引
-      - items: Tab项配置数组 [{ path, name, icon, badge?, dot? }]
-      - safeArea: 是否适配安全区域
-    Events:
-      - change: 切换时触发，返回索引
-  -->
   <div class="app-tabbar" :class="{ 'safe-area': safeArea }">
-    <div class="tabbar-bg">
-      <!-- 高亮背景滑块 -->
-      <div
-        class="active-bg"
-        :style="{ transform: `translateX(${activeIndex * 100}%)` }"
-      ></div>
-    </div>
-
     <div class="tabbar-items">
       <div
         v-for="(item, index) in items"
@@ -27,11 +9,9 @@
         @click="handleClick(index, item)"
       >
         <div class="tab-icon-wrap">
-          <van-icon
-            :name="activeIndex === index ? item.iconActive || item.icon : item.icon"
-            :size="22"
-            class="tab-icon"
-          />
+          <ClayIcon :color="getIconColor(index, activeIndex === index)" size="sm">
+            <LocalIcon :name="activeIndex === index ? item.iconActive || item.icon : item.icon" size="20" />
+          </ClayIcon>
           <span v-if="item.badge" class="tab-badge">{{ item.badge > 99 ? '99+' : item.badge }}</span>
           <span v-else-if="item.dot" class="tab-dot"></span>
         </div>
@@ -42,11 +22,8 @@
 </template>
 
 <script setup>
-/**
- * AppTabbar - 底部Tab导航栏
- * 自定义动画切换效果，比原生 Vant Tabbar 更精致
- */
 import { computed } from 'vue'
+import ClayIcon from './ClayIcon.vue'
 
 const props = defineProps({
   active: { type: Number, default: 0 },
@@ -68,6 +45,15 @@ const activeIndex = computed({
   set: (val) => emit('update:active', val)
 })
 
+const getIconColor = (index, isActive) => {
+  // 激活态用强彩色 Clay 底，未激活用浅色软底
+  if (isActive) {
+    const activeColors = ['brand', 'orange', 'lilac']
+    return activeColors[index % activeColors.length]
+  }
+  return 'soft-gray'
+}
+
 const handleClick = (index, item) => {
   activeIndex.value = index
   emit('change', index, item)
@@ -78,43 +64,27 @@ const handleClick = (index, item) => {
 .app-tabbar {
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 100;
-  background: var(--ab-bg-elevated);
-  box-shadow: 0 -1px 10px rgba(0, 0, 0, 0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  width: 100%;
+  max-width: 480px;
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid var(--ab-border-subtle);
 
   &.safe-area {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
-.tabbar-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-
-  .active-bg {
-    position: absolute;
-    top: 4px;
-    left: 0;
-    width: calc(100% / v-bind('items.length'));
-    height: calc(100% - 8px);
-    background: var(--ab-primary-50);
-    border-radius: var(--ab-radius-lg);
-    transition: transform var(--ab-transition-normal) var(--ab-ease-spring);
-  }
-}
-
 .tabbar-items {
   position: relative;
   display: flex;
-  height: 56px;
+  height: 68px;
+  padding: 8px 12px;
 }
 
 .tab-item {
@@ -123,28 +93,28 @@ const handleClick = (index, item) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
   cursor: pointer;
-  transition: color var(--ab-transition-fast);
   color: var(--ab-text-tertiary);
+  transition: all var(--ab-transition-normal);
+  position: relative;
 
   &.is-active {
-    color: var(--ab-primary-600);
-
-    .tab-icon {
-      animation: iconPop 0.4s var(--ab-ease-spring);
-    }
-
+    color: var(--ab-text-primary);
     .tab-label {
-      font-weight: var(--ab-font-bold);
+      font-weight: 700;
+      color: var(--ab-text-primary);
+    }
+    .tab-icon-wrap :deep(.clay-icon) {
+      animation: clayIconPop 0.5s var(--ab-ease-spring);
     }
   }
-}
 
-@keyframes iconPop {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.25); }
-  100% { transform: scale(1); }
+  &:active {
+    .tab-icon-wrap :deep(.clay-icon) {
+      transform: scale(0.92);
+    }
+  }
 }
 
 .tab-icon-wrap {
@@ -152,47 +122,44 @@ const handleClick = (index, item) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 22px;
-}
-
-.tab-icon {
-  transition: transform var(--ab-transition-fast);
 }
 
 .tab-label {
   font-size: 10px;
   line-height: 1;
-  font-weight: var(--ab-font-medium);
+  font-weight: 500;
   transition: all var(--ab-transition-fast);
+  letter-spacing: -0.01em;
 }
 
 .tab-badge {
   position: absolute;
-  top: -4px;
-  right: -6px;
+  top: -2px;
+  right: -2px;
   min-width: 16px;
   height: 16px;
   padding: 0 4px;
-  background: var(--ab-danger);
-  color: var(--ab-text-inverse);
+  background: var(--ab-peach-500);
+  color: #fff;
   font-size: 10px;
-  font-weight: var(--ab-font-bold);
-  border-radius: var(--ab-radius-full);
+  font-weight: 700;
+  border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--ab-bg-elevated);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(255, 107, 53, 0.4);
 }
 
 .tab-dot {
   position: absolute;
-  top: -2px;
-  right: -2px;
+  top: 0;
+  right: 0;
   width: 8px;
   height: 8px;
-  background: var(--ab-danger);
-  border-radius: var(--ab-radius-full);
-  border: 2px solid var(--ab-bg-elevated);
+  background: var(--ab-peach-500);
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.3);
 }
 </style>

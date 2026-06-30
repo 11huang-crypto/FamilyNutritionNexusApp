@@ -1,147 +1,703 @@
 /**
  * ============================================
- * AI智能菜篮子 - 设计规范系统
+ * AI智能菜篮子 - 设计规范系统 (v3.0)
+ * Mintlify × Claymorphism 融合风格 — **真 Clay 软糯 3D**
  * Design Token System
  * ============================================
- * 基准单位：4px
  * 命名规范：--ab-{category}-{property}-{variant}
- * ab = AI Basket
+ * 目标：让所有 UI 元素真正"浮起来"，彩色软糯一眼可辨
  */
 
-// ============================================
-// 1. 色彩系统 Color System
-// ============================================
-
-// 主色 Primary - 清新绿意，代表健康、天然、新鲜
 :root {
-  --ab-primary-50: #f0fdf4;
-  --ab-primary-100: #dcfce7;
-  --ab-primary-200: #bbf7d0;
-  --ab-primary-300: #86efac;
-  --ab-primary-400: #4ade80;
-  --ab-primary-500: #22c55e;
-  --ab-primary-600: #16a34a;
-  --ab-primary-700: #15803d;
-  --ab-primary-800: #166534;
-  --ab-primary-900: #14532d;
-
-  // 辅色 Secondary - 暖橙，代表活力、食欲
-  --ab-secondary-50: #fff7ed;
-  --ab-secondary-100: #ffedd5;
-  --ab-secondary-200: #fed7aa;
-  --ab-secondary-300: #fdba74;
-  --ab-secondary-400: #fb923c;
-  --ab-secondary-500: #f97316;
-  --ab-secondary-600: #ea580c;
-  --ab-secondary-700: #c2410c;
-
-  // 功能色 Functional Colors
-  --ab-success: #22c55e;
-  --ab-success-light: #dcfce7;
-  --ab-warning: #f59e0b;
-  --ab-warning-light: #fef3c7;
-  --ab-danger: #ef4444;
-  --ab-danger-light: #fee2e2;
-  --ab-info: #3b82f6;
-  --ab-info-light: #dbeafe;
-
-  // 中性色 Neutral
-  --ab-gray-50: #fafafa;
+  /* ============================================
+   * 中性色 (Near Black 系，参照 Mintlify)
+   * ============================================ */
+  --ab-gray-50:  #fafafa;
   --ab-gray-100: #f5f5f5;
   --ab-gray-200: #e5e5e5;
   --ab-gray-300: #d4d4d4;
-  --ab-gray-400: #a3a3a3;
-  --ab-gray-500: #737373;
-  --ab-gray-600: #525252;
-  --ab-gray-700: #404040;
-  --ab-gray-800: #262626;
-  --ab-gray-900: #171717;
+  --ab-gray-400: #888888;
+  --ab-gray-500: #666666;
+  --ab-gray-600: #444444;
+  --ab-gray-700: #333333;
+  --ab-gray-800: #1a1a1a;
+  --ab-gray-900: #0d0d0d;
 
-  // 背景色 Background
-  --ab-bg-page: #f8faf7;
-  --ab-bg-card: #ffffff;
-  --ab-bg-elevated: #ffffff;
-  --ab-bg-surface: #f0f4ef;
+  /* ============================================
+   * 文字
+   * ============================================ */
+  --ab-text-primary:   #0d0d0d;
+  --ab-text-secondary: #333333;
+  --ab-text-tertiary:  #666666;
+  --ab-text-disabled:  #888888;
+  --ab-text-inverse:   #ffffff;
 
-  // 文字色 Text
-  --ab-text-primary: #1a1a1a;
-  --ab-text-secondary: #666666;
-  --ab-text-tertiary: #999999;
-  --ab-text-disabled: #cccccc;
-  --ab-text-inverse: #ffffff;
-  --ab-text-link: var(--ab-primary-600);
+  /* ============================================
+   * 背景
+   * ============================================ */
+  --ab-bg-page:      #f4f8f2;   /* 浅绿白主背景 (Mintlify × Clay 调) */
+  --ab-bg-elevated:  #ffffff;
+  --ab-bg-overlay:   rgba(13, 13, 13, 0.6);
+  --ab-bg-hover:     #f5f5f5;
+  --ab-bg-surface:   #eaf3e7;
 
-  // 边框与分割线
-  --ab-border-light: #f0f0f0;
-  --ab-border: #e8e8e8;
-  --ab-border-strong: #d9d9d9;
-  --ab-divider: #f5f5f5;
+  /* ============================================
+   * 边框
+   * ============================================ */
+  --ab-border-subtle: rgba(0, 0, 0, 0.05);
+  --ab-border-medium: rgba(0, 0, 0, 0.08);
+  --ab-border-strong: rgba(0, 0, 0, 0.12);
 
-  // ============================================
-  // 2. 字体系统 Typography
-  // ============================================
-  --ab-font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --ab-font-mono: 'SF Mono', 'Fira Code', monospace;
+  /* ============================================
+   * 品牌主色 (Mintlify 招牌绿 #18E299)
+   * ============================================ */
+  --ab-brand-50:  #e6faf2;
+  --ab-brand-100: #cdf4e5;
+  --ab-brand-200: #9be9cb;
+  --ab-brand-300: #68dfb1;
+  --ab-brand-400: #36d497;
+  --ab-brand-500: #18e299;
+  --ab-brand-600: #14b87c;
+  --ab-brand-700: #108e61;
+  --ab-brand-800: #0c6445;
+  --ab-brand-900: #083a28;
 
-  // 字号 Scale (基于 1.25 倍率)
-  --ab-text-xs: 10px;      // 辅助标注
-  --ab-text-sm: 12px;      // 标签、徽章文字
-  --ab-text-base: 14px;    // 正文
-  --ab-text-lg: 16px;      // 列表标题
-  --ab-text-xl: 18px;      // 卡片标题
-  --ab-text-2xl: 20px;     // 页面标题
-  --ab-text-3xl: 24px;     // 大标题
-  --ab-text-4xl: 28px;     // 展示文字
+  /* ============================================
+   * 辅助色 (Clay 调色板 - 真正鲜艳的彩)
+   * 50/100/200 用于浅底, 500/600 用于深色文字
+   * ============================================ */
+  /* 桃粉 Peach — 热情、暖橙系 */
+  --ab-peach-50:   #fff1ea;
+  --ab-peach-100:  #ffe0d1;
+  --ab-peach-200:  #ffc4a8;
+  --ab-peach-300:  #ffa07c;
+  --ab-peach-400:  #ff8258;
+  --ab-peach-500:  #ff6b35;
+  --ab-peach-600:  #e85a25;
 
-  // 字重
-  --ab-font-normal: 400;
-  --ab-font-medium: 500;
-  --ab-font-bold: 700;
+  /* 薄荷绿 Mint — 清新、生机 */
+  --ab-mint-50:    #ecfdf3;
+  --ab-mint-100:   #d1fadf;
+  --ab-mint-200:   #a7f3c6;
+  --ab-mint-300:   #6fe79c;
+  --ab-mint-400:   #34d77a;
+  --ab-mint-500:   #1bc465;
+  --ab-mint-600:   #15a04f;
 
-  // 行高
-  --ab-leading-tight: 1.25;
-  --ab-leading-normal: 1.5;
-  --ab-leading-relaxed: 1.75;
+  /* 天蓝 Blue — 清爽、冷静 */
+  --ab-blue-50:    #ecf5ff;
+  --ab-blue-100:   #d8eaff;
+  --ab-blue-200:   #b3d6ff;
+  --ab-blue-300:   #85baff;
+  --ab-blue-400:   #5a9eff;
+  --ab-blue-500:   #3b87f0;
+  --ab-blue-600:   #2a6ed4;
 
-  // ============================================
-  // 3. 间距系统 Spacing (4px基准)
-  // ============================================
-  --ab-space-0: 0px;
-  --ab-space-1: 4px;
-  --ab-space-2: 8px;
-  --ab-space-3: 12px;
-  --ab-space-4: 16px;
-  --ab-space-5: 20px;
-  --ab-space-6: 24px;
-  --ab-space-8: 32px;
+  /* 丁香紫 Lilac — 优雅、神秘 */
+  --ab-lilac-50:   #f5f1ff;
+  --ab-lilac-100:  #ebe3ff;
+  --ab-lilac-200:  #d6c7ff;
+  --ab-lilac-300:  #b89eff;
+  --ab-lilac-400:  #9a78ff;
+  --ab-lilac-500:  #815ff0;
+  --ab-lilac-600:  #6741d4;
+
+  /* 暖橙 Orange — 阳光、强调 */
+  --ab-orange-50:  #fff4ea;
+  --ab-orange-100: #ffe4cc;
+  --ab-orange-200: #ffc999;
+  --ab-orange-300: #ffa860;
+  --ab-orange-400: #ff8a30;
+  --ab-orange-500: #f97316;
+  --ab-orange-600: #d85f0a;
+
+  /* 蜜瓜黄 Yellow — 食物阳光 */
+  --ab-yellow-50:  #fffbe6;
+  --ab-yellow-100: #fff3b8;
+  --ab-yellow-200: #ffe87a;
+  --ab-yellow-300: #ffd83d;
+  --ab-yellow-400: #f5c400;
+  --ab-yellow-500: #d9a300;
+  --ab-yellow-600: #b08500;
+
+  /* 樱花粉 Pink — 柔和、可爱 */
+  --ab-pink-50:    #fff0f4;
+  --ab-pink-100:   #ffdfe9;
+  --ab-pink-200:   #ffb8d0;
+  --ab-pink-300:   #ff85b1;
+  --ab-pink-400:   #ff5392;
+  --ab-pink-500:   #f73676;
+  --ab-pink-600:   #d11e5c;
+
+  /* ============================================
+   * 功能色
+   * ============================================ */
+  --ab-success: #22c55e;
+  --ab-success-bg: #f0fdf4;
+  --ab-warning: #f59e0b;
+  --ab-warning-bg: #fffbeb;
+  --ab-error: #ef4444;
+  --ab-error-bg: #fef2f2;
+  --ab-info: #3b82f6;
+  --ab-info-bg: #eff6ff;
+
+  /* ============================================
+   * 字体 (Inter + Noto Sans SC)
+   * ============================================ */
+  --ab-font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ab-font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+
+  --ab-text-xs:   11px;
+  --ab-text-sm:   12px;
+  --ab-text-base: 14px;
+  --ab-text-md:   15px;
+  --ab-text-lg:   16px;
+  --ab-text-xl:   18px;
+  --ab-text-2xl:  22px;
+  --ab-text-3xl:  28px;
+  --ab-text-4xl:  34px;
+  --ab-text-5xl:  42px;
+  --ab-text-6xl:  52px;
+
+  --ab-font-normal:   400;
+  --ab-font-medium:   500;
+  --ab-font-semibold: 600;
+
+  --ab-leading-tight:  1.15;
+  --ab-leading-snug:   1.30;
+  --ab-leading-normal: 1.50;
+  --ab-leading-loose:  1.70;
+
+  --ab-tracking-tighter: -0.04em;
+  --ab-tracking-tight:   -0.02em;
+  --ab-tracking-snug:    -0.01em;
+  --ab-tracking-normal:  0;
+  --ab-tracking-wide:    0.04em;
+
+  /* ============================================
+   * 间距 (8px 基准)
+   * ============================================ */
+  --ab-space-0:  0px;
+  --ab-space-1:  4px;
+  --ab-space-2:  8px;
+  --ab-space-3:  12px;
+  --ab-space-4:  16px;
+  --ab-space-5:  20px;
+  --ab-space-6:  24px;
+  --ab-space-7:  28px;
+  --ab-space-8:  32px;
   --ab-space-10: 40px;
   --ab-space-12: 48px;
+  --ab-space-16: 64px;
+  --ab-space-20: 80px;
 
-  // ============================================
-  // 4. 圆角系统 Border Radius
-  // ============================================
-  --ab-radius-sm: 4px;     // 标签、徽章
-  --ab-radius-md: 8px;     // 按钮、输入框
-  --ab-radius-lg: 12px;    // 卡片
-  --ab-radius-xl: 16px;    // 大图、弹窗
-  --ab-radius-2xl: 20px;   // 特殊展示
-  --ab-radius-full: 9999px; // 头像、圆形按钮
+  /* ============================================
+   * 圆角 (Clay 风：更大更厚)
+   * ============================================ */
+  --ab-radius-xs:   6px;
+  --ab-radius-sm:   10px;
+  --ab-radius-md:   14px;
+  --ab-radius-lg:   20px;     /* 标准卡 */
+  --ab-radius-xl:   24px;     /* Hero 卡 */
+  --ab-radius-2xl:  32px;     /* 大容器 */
+  --ab-radius-3xl:  40px;     /* 巨型容器 */
+  --ab-radius-full: 9999px;   /* 药丸 */
 
-  // ============================================
-  // 5. 阴影系统 Shadow
-  // ============================================
-  --ab-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --ab-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --ab-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --ab-shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --ab-shadow-glow: 0 0 20px rgba(34, 197, 94, 0.15);
+  /* ============================================
+   * 阴影 (Claymorphism 真正的双阴影 — 内+外)
+   * ============================================ */
+  /* 微浮起 — 用于小图标、小按钮 */
+  --ab-shadow-float-sm:
+    inset 0 -2px 0 rgba(0, 0, 0, 0.06),
+    inset 0 2px 3px rgba(255, 255, 255, 0.85),
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
 
-  // ============================================
-  // 6. 动画与过渡
-  // ============================================
-  --ab-transition-fast: 150ms ease;
-  --ab-transition-normal: 250ms ease;
-  --ab-transition-slow: 350ms ease;
+  /* 标准浮起 — 用于卡片、按钮 */
+  --ab-shadow-float:
+    inset 0 -3px 0 rgba(0, 0, 0, 0.08),
+    inset 0 3px 5px rgba(255, 255, 255, 0.95),
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+
+  /* 强浮起 — 用于 Hero 卡片 */
+  --ab-shadow-float-lg:
+    inset 0 -4px 0 rgba(0, 0, 0, 0.10),
+    inset 0 4px 8px rgba(255, 255, 255, 1),
+    0 16px 32px rgba(0, 0, 0, 0.10),
+    0 4px 8px rgba(0, 0, 0, 0.06);
+
+  /* 按下 — 用于 active 状态 */
+  --ab-shadow-press:
+    inset 0 3px 6px rgba(0, 0, 0, 0.10),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.5);
+
+  /* 阴影：极简 Mintlify */
+  --ab-shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.05);
+  --ab-shadow-md:  0 2px 6px rgba(0, 0, 0, 0.06);
+  --ab-shadow-lg:  0 8px 24px rgba(0, 0, 0, 0.08);
+  --ab-shadow-xl:  0 16px 40px rgba(0, 0, 0, 0.12);
+
+  /* 彩色光晕 — 用于彩色按钮/icon hover */
+  --ab-glow-brand:   0 12px 32px rgba(24, 226, 153, 0.35), 0 4px 8px rgba(24, 226, 153, 0.20);
+  --ab-glow-peach:   0 12px 32px rgba(255, 107, 53, 0.30), 0 4px 8px rgba(255, 107, 53, 0.18);
+  --ab-glow-mint:    0 12px 32px rgba(27, 196, 101, 0.30), 0 4px 8px rgba(27, 196, 101, 0.18);
+  --ab-glow-blue:    0 12px 32px rgba(59, 135, 240, 0.30), 0 4px 8px rgba(59, 135, 240, 0.18);
+  --ab-glow-lilac:   0 12px 32px rgba(129, 95, 240, 0.30), 0 4px 8px rgba(129, 95, 240, 0.18);
+  --ab-glow-orange:  0 12px 32px rgba(249, 115, 22, 0.32), 0 4px 8px rgba(249, 115, 22, 0.20);
+  --ab-glow-pink:    0 12px 32px rgba(247, 54, 118, 0.30), 0 4px 8px rgba(247, 54, 118, 0.18);
+
+  /* ============================================
+   * 动画
+   * ============================================ */
   --ab-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ab-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ab-ease-soft:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ab-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  --ab-transition-fast:   150ms var(--ab-ease-smooth);
+  --ab-transition-normal: 250ms var(--ab-ease-soft);
+  --ab-transition-slow:   400ms var(--ab-ease-soft);
+  --ab-transition-spring: 400ms var(--ab-ease-spring);
+}
+
+/* ============================================
+ * 通用 Reset
+ * ============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--ab-font-family);
+  font-size: var(--ab-text-base);
+  line-height: var(--ab-leading-normal);
+  color: var(--ab-text-primary);
+  background: transparent;                       /* 透出 ParticleBackground 粒子 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+/* 所有 page 容器都透出粒子（粒子代替静态白底） */
+.home-page,
+.analyze-page,
+.basket-page,
+.shopping-list-page,
+.meal-plan-page,
+.nutrition-page,
+.profile-page,
+.family-health-page,
+.recognize-page,
+.login-page,
+.nutrition-analysis {
+  background: transparent;
+}
+
+#app {
+  min-height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+  background: transparent;
+}
+
+/* ============================================
+ * ClayButton 通用按钮 (Mintlify 药丸 + Clay 双阴影)
+ * ============================================ */
+.clay-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 28px;
+  border: none;
+  border-radius: var(--ab-radius-full);
+  font-size: var(--ab-text-md);
+  font-weight: var(--ab-font-semibold);
+  font-family: inherit;
+  letter-spacing: var(--ab-tracking-snug);
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--ab-transition-normal), box-shadow var(--ab-transition-normal), background var(--ab-transition-normal);
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--block {
+    display: flex;
+    width: 100%;
+  }
+
+  /* Primary：品牌绿 — 招牌色 */
+  &--primary {
+    background: linear-gradient(180deg, var(--ab-brand-400) 0%, var(--ab-brand-500) 100%);
+    color: #ffffff;
+    box-shadow: var(--ab-shadow-float);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: var(--ab-glow-brand);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: var(--ab-shadow-press);
+    }
+  }
+
+  /* Secondary：白底 + 细描边 */
+  &--secondary {
+    background: #ffffff;
+    color: var(--ab-text-primary);
+    border: 1.5px solid var(--ab-border-medium);
+    box-shadow: var(--ab-shadow-sm);
+
+    &:hover:not(:disabled) {
+      background: var(--ab-bg-hover);
+      border-color: var(--ab-brand-300);
+      transform: translateY(-1px);
+      box-shadow: var(--ab-shadow-md);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+      box-shadow: var(--ab-shadow-press);
+    }
+  }
+
+  /* Ghost：透明背景 */
+  &--ghost {
+    background: transparent;
+    color: var(--ab-text-secondary);
+    box-shadow: none;
+
+    &:hover:not(:disabled) {
+      color: var(--ab-brand-600);
+      background: var(--ab-brand-50);
+    }
+  }
+
+  /* 危险：退出登录等 */
+  &--danger {
+    background: #ffffff;
+    color: var(--ab-error);
+    border: 1.5px solid #fecaca;
+    box-shadow: var(--ab-shadow-sm);
+
+    &:hover:not(:disabled) {
+      background: var(--ab-error-bg);
+      border-color: var(--ab-error);
+    }
+  }
+
+  /* 尺寸 */
+  &.clay-btn--sm {
+    height: 36px;
+    padding: 0 18px;
+    font-size: var(--ab-text-sm);
+    border-radius: var(--ab-radius-full);
+  }
+
+  &.clay-btn--lg {
+    height: 60px;
+    padding: 0 36px;
+    font-size: var(--ab-text-lg);
+  }
+}
+
+/* ============================================
+ * ClayIcon 通用图标容器 (彩色 Clay 底 + 3D)
+ * 默认 56×56 圆角方，可改 sm/md/lg
+ * ============================================ */
+.clay-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  box-shadow: var(--ab-shadow-float-sm);
+  transition: transform var(--ab-transition-normal), box-shadow var(--ab-transition-normal);
+  position: relative;
+  flex-shrink: 0;
+  font-size: 26px;
+  line-height: 1;
+
+  &:hover {
+    transform: translateY(-3px) scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+    box-shadow: var(--ab-shadow-press);
+  }
+
+  /* 尺寸 */
+  &.clay-icon--sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    font-size: 16px;
+    box-shadow: var(--ab-shadow-float-sm);
+  }
+
+  &.clay-icon--md {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    font-size: 22px;
+  }
+
+  &.clay-icon--lg {
+    width: 72px;
+    height: 72px;
+    border-radius: 22px;
+    font-size: 34px;
+  }
+
+  &.clay-icon--xl {
+    width: 88px;
+    height: 88px;
+    border-radius: 26px;
+    font-size: 42px;
+  }
+
+  /* 5 大色 (Clay 调色板) — 渐变背景 + 深色字 */
+  &.clay-icon--brand {
+    background: linear-gradient(135deg, var(--ab-brand-200) 0%, var(--ab-brand-400) 100%);
+    color: #ffffff;
+  }
+  &.clay-icon--peach {
+    background: linear-gradient(135deg, var(--ab-peach-200) 0%, var(--ab-peach-400) 100%);
+    color: #ffffff;
+  }
+  &.clay-icon--mint {
+    background: linear-gradient(135deg, var(--ab-mint-200) 0%, var(--ab-mint-400) 100%);
+    color: #ffffff;
+  }
+  &.clay-icon--blue {
+    background: linear-gradient(135deg, var(--ab-blue-200) 0%, var(--ab-blue-400) 100%);
+    color: #ffffff;
+  }
+  &.clay-icon--lilac {
+    background: linear-gradient(135deg, var(--ab-lilac-200) 0%, var(--ab-lilac-400) 100%);
+    color: #ffffff;
+  }
+  &.clay-icon--orange {
+    background: linear-gradient(135deg, var(--ab-orange-200) 0%, var(--ab-orange-400) 100%);
+    color: #ffffff;
+  }
+  &.clay-icon--yellow {
+    background: linear-gradient(135deg, var(--ab-yellow-200) 0%, var(--ab-yellow-400) 100%);
+    color: #ffffff;
+  }
+  &.clay-icon--pink {
+    background: linear-gradient(135deg, var(--ab-pink-200) 0%, var(--ab-pink-400) 100%);
+    color: #ffffff;
+  }
+
+  /* 浅色版 — 用于小场景 */
+  &.clay-icon--soft-brand  { background: linear-gradient(135deg, var(--ab-brand-50), var(--ab-brand-100));  color: var(--ab-brand-600); }
+  &.clay-icon--soft-peach  { background: linear-gradient(135deg, var(--ab-peach-50), var(--ab-peach-100));  color: var(--ab-peach-600); }
+  &.clay-icon--soft-mint   { background: linear-gradient(135deg, var(--ab-mint-50), var(--ab-mint-100));    color: var(--ab-mint-600); }
+  &.clay-icon--soft-blue   { background: linear-gradient(135deg, var(--ab-blue-50), var(--ab-blue-100));    color: var(--ab-blue-600); }
+  &.clay-icon--soft-lilac  { background: linear-gradient(135deg, var(--ab-lilac-50), var(--ab-lilac-100));  color: var(--ab-lilac-600); }
+  &.clay-icon--soft-orange { background: linear-gradient(135deg, var(--ab-orange-50), var(--ab-orange-100)); color: var(--ab-orange-600); }
+  &.clay-icon--soft-yellow { background: linear-gradient(135deg, var(--ab-yellow-50), var(--ab-yellow-100)); color: var(--ab-yellow-600); }
+  &.clay-icon--soft-pink   { background: linear-gradient(135deg, var(--ab-pink-50), var(--ab-pink-100));    color: var(--ab-pink-600); }
+  &.clay-icon--soft-gray   { background: linear-gradient(135deg, var(--ab-gray-50), var(--ab-gray-100));    color: var(--ab-gray-700); }
+}
+
+/* ============================================
+ * ClayCard 通用卡片
+ * ============================================ */
+.clay-card {
+  background: #ffffff;
+  border-radius: var(--ab-radius-lg);
+  box-shadow: var(--ab-shadow-float);
+  padding: var(--ab-space-5);
+  border: 1px solid var(--ab-border-subtle);
+  transition: transform var(--ab-transition-normal), box-shadow var(--ab-transition-normal);
+}
+
+.clay-card--feature {
+  padding: var(--ab-space-7);
+  border-radius: var(--ab-radius-xl);
+  box-shadow: var(--ab-shadow-float-lg);
+}
+
+.clay-card--soft {
+  /* 彩色软底 */
+  &.clay-card--brand  { background: linear-gradient(135deg, var(--ab-brand-50), #ffffff); }
+  &.clay-card--peach  { background: linear-gradient(135deg, var(--ab-peach-50), #ffffff); }
+  &.clay-card--mint   { background: linear-gradient(135deg, var(--ab-mint-50), #ffffff); }
+  &.clay-card--blue   { background: linear-gradient(135deg, var(--ab-blue-50), #ffffff); }
+  &.clay-card--lilac  { background: linear-gradient(135deg, var(--ab-lilac-50), #ffffff); }
+  &.clay-card--orange { background: linear-gradient(135deg, var(--ab-orange-50), #ffffff); }
+  &.clay-card--pink   { background: linear-gradient(135deg, var(--ab-pink-50), #ffffff); }
+  &.clay-card--yellow { background: linear-gradient(135deg, var(--ab-yellow-50), #ffffff); }
+}
+
+/* ============================================
+ * ClayInput 通用药丸输入框
+ * ============================================ */
+.clay-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 56px;
+  padding: 0 22px;
+  background: #ffffff;
+  border: 1.5px solid var(--ab-border-medium);
+  border-radius: var(--ab-radius-full);
+  box-shadow: var(--ab-shadow-sm);
+  transition: all var(--ab-transition-normal);
+
+  input {
+    flex: 1;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: var(--ab-text-md);
+    color: var(--ab-text-primary);
+    letter-spacing: var(--ab-tracking-snug);
+
+    &::placeholder {
+      color: var(--ab-text-disabled);
+    }
+  }
+
+  .clay-input__prefix {
+    display: inline-flex;
+    align-items: center;
+    color: var(--ab-brand-500);
+  }
+
+  .clay-input__suffix {
+    cursor: pointer;
+    color: var(--ab-text-tertiary);
+    display: inline-flex;
+  }
+
+  &:focus-within {
+    border-color: var(--ab-brand-400);
+    box-shadow: 0 0 0 4px rgba(24, 226, 153, 0.15), var(--ab-shadow-float-sm);
+  }
+}
+
+/* ============================================
+ * 大标题 — Mintlify 风的负字距 Hero 文字
+ * ============================================ */
+.clay-h1 {
+  font-size: var(--ab-text-4xl);
+  font-weight: var(--ab-font-semibold);
+  letter-spacing: var(--ab-tracking-tighter);
+  line-height: var(--ab-leading-tight);
+  color: var(--ab-text-primary);
+}
+.clay-h2 {
+  font-size: var(--ab-text-3xl);
+  font-weight: var(--ab-font-semibold);
+  letter-spacing: var(--ab-tracking-tight);
+  line-height: var(--ab-leading-snug);
+  color: var(--ab-text-primary);
+}
+.clay-h3 {
+  font-size: var(--ab-text-xl);
+  font-weight: var(--ab-font-semibold);
+  letter-spacing: var(--ab-tracking-snug);
+  line-height: var(--ab-leading-snug);
+  color: var(--ab-text-primary);
+}
+
+/* ============================================
+ * 进度条 — Clay 软糯
+ * ============================================ */
+.clay-progress {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  background: var(--ab-gray-100);
+  border-radius: var(--ab-radius-full);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+
+  &__bar {
+    height: 100%;
+    border-radius: var(--ab-radius-full);
+    transition: width var(--ab-transition-slow);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+
+  &--brand  .clay-progress__bar { background: linear-gradient(90deg, var(--ab-brand-400), var(--ab-brand-500)); }
+  &--peach  .clay-progress__bar { background: linear-gradient(90deg, var(--ab-peach-300), var(--ab-peach-500)); }
+  &--mint   .clay-progress__bar { background: linear-gradient(90deg, var(--ab-mint-300),  var(--ab-mint-500)); }
+  &--blue   .clay-progress__bar { background: linear-gradient(90deg, var(--ab-blue-300),  var(--ab-blue-500)); }
+  &--lilac  .clay-progress__bar { background: linear-gradient(90deg, var(--ab-lilac-300), var(--ab-lilac-500)); }
+  &--orange .clay-progress__bar { background: linear-gradient(90deg, var(--ab-orange-300), var(--ab-orange-500)); }
+  &--pink   .clay-progress__bar { background: linear-gradient(90deg, var(--ab-pink-300), var(--ab-pink-500)); }
+}
+
+/* ============================================
+ * ClayBadge 徽章
+ * ============================================ */
+.clay-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--ab-radius-full);
+  font-size: var(--ab-text-xs);
+  font-weight: var(--ab-font-medium);
+  letter-spacing: var(--ab-tracking-snug);
+
+  &--brand  { background: var(--ab-brand-50);   color: var(--ab-brand-700); }
+  &--peach  { background: var(--ab-peach-50);   color: var(--ab-peach-600); }
+  &--mint   { background: var(--ab-mint-50);    color: var(--ab-mint-600); }
+  &--blue   { background: var(--ab-blue-50);    color: var(--ab-blue-600); }
+  &--lilac  { background: var(--ab-lilac-50);   color: var(--ab-lilac-600); }
+  &--orange { background: var(--ab-orange-50);  color: var(--ab-orange-600); }
+  &--pink   { background: var(--ab-pink-50);    color: var(--ab-pink-600); }
+  &--yellow { background: var(--ab-yellow-50);  color: var(--ab-yellow-600); }
+  &--gray   { background: var(--ab-gray-100);   color: var(--ab-gray-700); }
+}
+
+/* ============================================
+ * 动画 keyframes
+ * ============================================ */
+@keyframes clayFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+@keyframes clayPop {
+  0%   { transform: scale(0.9); opacity: 0; }
+  60%  { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes clayIconPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+@keyframes clayGlow {
+  0%, 100% { box-shadow: var(--ab-glow-brand); }
+  50%      { box-shadow: 0 16px 40px rgba(24, 226, 153, 0.45); }
+}
+
+@keyframes claySpin {
+  to { transform: rotate(360deg); }
 }

@@ -22,7 +22,7 @@
       <!-- ========== 1. 导航栏 Navbar ========== -->
       <section class="demo-section">
         <h3 class="demo-heading">
-          <van-icon name="wap-nav" size="18" color="#22c55e" />
+          <LocalIcon name="wap-nav" size="18" color="#22c55e" />
           <span>01. AppNavbar — 顶部导航栏</span>
         </h3>
 
@@ -48,7 +48,7 @@
       <!-- ========== 2. 底部Tab栏 Tabbar ========== -->
       <section class="demo-section">
         <h3 class="demo-heading">
-          <van-icon name="bars" size="18" color="#22c55e" />
+          <LocalIcon name="bars" size="18" color="#22c55e" />
           <span>02. AppTabbar — 底部Tab栏</span>
         </h3>
 
@@ -65,7 +65,7 @@
       <!-- ========== 3. 果蔬卡片 VegCard ========== -->
       <section class="demo-section">
         <h3 class="demo-heading">
-          <van-icon name="coupon-o" size="18" color="#22c55e" />
+          <LocalIcon name="coupon-o" size="18" color="#22c55e" />
           <span>03. VegCard — 果蔬卡片</span>
         </h3>
 
@@ -108,7 +108,7 @@
       <!-- ========== 4. 营养标签 NutriBadge ========== -->
       <section class="demo-section">
         <h3 class="demo-heading">
-          <van-icon name="label-o" size="18" color="#22c55e" />
+          <LocalIcon name="label-o" size="18" color="#22c55e" />
           <span>04. NutriBadge — 营养标签徽章</span>
         </h3>
 
@@ -142,7 +142,7 @@
       <!-- ========== 5. 警告提示条 AlertBar ========== -->
       <section class="demo-section">
         <h3 class="demo-heading">
-          <van-icon name="warning-o" size="18" color="#22c55e" />
+          <LocalIcon name="warning-o" size="18" color="#22c55e" />
           <span>05. AlertBar — 警告提示条</span>
         </h3>
 
@@ -158,7 +158,7 @@
       <!-- ========== 6. 家庭成员头像 FamilyAvatar ========== -->
       <section class="demo-section">
         <h3 class="demo-heading">
-          <van-icon name="friends-o" size="18" color="#22c55e" />
+          <LocalIcon name="friends-o" size="18" color="#22c55e" />
           <span>06. FamilyAvatar — 家庭成员头像</span>
         </h3>
 
@@ -203,7 +203,7 @@
       <!-- ========== 设计规范速查 ========== -->
       <section v-if="showSpec" class="demo-section spec-section">
         <h3 class="demo-heading">
-          <van-icon name="brush-o" size="18" color="#22c55e" />
+          <LocalIcon name="brush-o" size="18" color="#22c55e" />
           <span>设计规范速查 Design Token</span>
         </h3>
 
@@ -293,7 +293,7 @@ const specText = [
 <style scoped lang="scss">
 .demo-page {
   min-height: 100vh;
-  background: var(--ab-bg-page);
+  background: transparent;
 }
 
 .demo-content {
@@ -311,13 +311,13 @@ const specText = [
 .section-title {
   font-size: var(--ab-text-xl);
   font-weight: var(--ab-font-bold);
-  color: var(--ab-primary-800);
+  color: var(--ab-brand-800);
   margin-bottom: var(--ab-space-1);
 }
 
 .section-desc {
   font-size: var(--ab-text-sm);
-  color: var(--ab-primary-700);
+  color: var(--ab-brand-700);
   opacity: 0.8;
 }
 
@@ -334,7 +334,7 @@ const specText = [
   color: var(--ab-text-primary);
   margin-bottom: var(--ab-space-4);
   padding-bottom: var(--ab-space-2);
-  border-bottom: 2px solid var(--ab-primary-100);
+  border-bottom: 2px solid var(--ab-brand-100);
 }
 
 .demo-block {
@@ -421,7 +421,7 @@ const specText = [
   background: var(--ab-bg-card);
   border-radius: var(--ab-radius-lg);
   padding: var(--ab-space-4);
-  box-shadow: var(--ab-shadow-sm);
+  box-shadow: var(--ab-clay-shadow-sm);
 }
 
 .spec-color-grid {

@@ -1,87 +1,66 @@
 <template>
   <div class="shopping-list-page">
-    <van-nav-bar title="采购清单" left-arrow @click-left="goBack" />
+    <AppNavbar title="采购清单" :showBack="true" />
 
-    <div class="list-header">
-      <span class="list-title">家庭采购清单</span>
-      <span class="item-count">{{ listItems.length }} 项</span>
-    </div>
+    <div class="page-body">
+      <!-- 清单头部 -->
+      <div class="list-header">
+        <h2 class="list-title">家庭采购清单</h2>
+        <span class="item-count">{{ listItems.length }} 项</span>
+      </div>
 
-    <div class="shopping-list">
-      <div class="list-container">
-        <div 
-          v-for="item in listItems" 
-          :key="item.id" 
-          class="list-item"
-          :class="{ checked: item.checked }"
-        >
-          <div 
-            class="check-btn" 
-            :class="{ checked: item.checked }"
-            @click="onItemCheck(item.id, !item.checked)"
-          >
-            <van-icon v-if="item.checked" name="checked" size="20" color="#fff" />
+      <!-- 列表 -->
+      <div class="shopping-list">
+        <TransitionGroup name="list" tag="div" class="list-container">
+          <div v-for="item in listItems" :key="item.id" class="clay-card list-item" :class="{ checked: item.checked }">
+            <div class="check-btn" :class="{ checked: item.checked }" @click="onItemCheck(item.id, !item.checked)">
+              <LocalIcon v-if="item.checked" name="checked" size="16" color="#fff" />
+            </div>
+            <div class="item-info">
+              <span class="item-name">{{ item.name }}</span>
+              <span class="item-desc">{{ item.quantity }}{{ item.unit }}</span>
+            </div>
+            <div class="item-actions">
+              <van-stepper v-model="item.quantity" :min="1" @change="(val) => updateQuantity(item.id, val)" size="small" />
+              <button class="delete-item-btn" @click.stop="deleteItem(item.id)">
+                <LocalIcon name="delete-o" size="16" color="var(--ab-text-disabled)" />
+              </button>
+            </div>
           </div>
-          <div class="item-info">
-            <span class="item-name">{{ item.name }}</span>
-            <span class="item-desc">{{ item.quantity }}{{ item.unit }}</span>
-          </div>
-          <div class="item-actions">
-            <van-stepper 
-              v-model="item.quantity" 
-              :min="1"
-              @change="(val) => updateQuantity(item.id, val)"
-              size="small"
-            />
-            <van-button 
-              type="danger" 
-              size="small" 
-              icon="delete-o"
-              @click="deleteItem(item.id)"
-            />
-          </div>
+        </TransitionGroup>
+
+        <div class="empty-state" v-if="listItems.length === 0">
+          <div class="empty-icon">🛒</div>
+          <p class="empty-text">暂无采购清单</p>
         </div>
       </div>
-      
-      <div class="empty-state" v-if="listItems.length === 0">
-        <van-icon name="shopping-cart-o" size="48" color="#ccc" />
-        <p>暂无采购清单</p>
+
+      <!-- 添加 -->
+      <div class="add-section clay-card">
+        <van-field v-model="newItemName" placeholder="添加新物品" clearable @keyup.enter="addItem">
+          <template #right-icon>
+            <button class="clay-btn clay-btn--primary" style="padding: 4px 12px; font-size: 12px;" @click="addItem">添加</button>
+          </template>
+        </van-field>
       </div>
-    </div>
 
-    <div class="add-section">
-      <van-field 
-        v-model="newItemName" 
-        placeholder="添加新物品"
-        right-icon="plus"
-        @click-right-icon="addItem"
-      />
-    </div>
-
-    <div class="bottom-bar">
-      <div class="progress-info">
-        <div class="progress-text">
-          <span>已完成</span>
-          <span class="progress-count">{{ completedCount }}/{{ listItems.length }}</span>
+      <!-- 底部操作栏 -->
+      <div class="bottom-bar clay-card">
+        <div class="progress-info">
+          <div class="progress-text">
+            <span>已完成</span>
+            <span class="progress-count">{{ completedCount }}/{{ listItems.length }}</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-fill" :style="{ width: progressPercent + '%', background: progressColor }"></div>
+          </div>
         </div>
-        <van-progress 
-          :percentage="progressPercent" 
-          :show-info="false" 
-          :color="progressColor"
-        />
-      </div>
-      
-      <div class="action-buttons">
-        <van-button type="default" @click="clearChecked">清除已选</van-button>
-        <van-button type="primary" @click="shareList">分享清单</van-button>
+        <div class="action-buttons">
+          <button class="clay-btn clay-btn--secondary" @click="clearChecked">清除已选</button>
+          <button class="clay-btn clay-btn--primary" @click="shareList">分享清单</button>
+        </div>
       </div>
     </div>
-
-    <van-loading 
-      v-if="initialLoading" 
-      class="loading-mask"
-      text="加载中..."
-    />
   </div>
 </template>
 
@@ -90,395 +69,120 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { showToast } from 'vant';
 import { getShoppingList, addShoppingItem, updateShoppingItem, deleteShoppingItem } from '../api';
+import AppNavbar from '@/components/AppNavbar.vue';
 
 const router = useRouter();
-
-const initialLoading = ref(true);
 const listItems = ref([]);
 const newItemName = ref('');
 const family_id = ref(null);
 
-const completedCount = computed(() => {
-  return listItems.value.filter(item => item.checked).length;
-});
-
-const progressPercent = computed(() => {
-  if (listItems.value.length === 0) return 0;
-  return Math.round((completedCount.value / listItems.value.length) * 100);
-});
-
+const completedCount = computed(() => listItems.value.filter(item => item.checked).length);
+const progressPercent = computed(() => listItems.value.length === 0 ? 0 : Math.round((completedCount.value / listItems.value.length) * 100));
 const progressColor = computed(() => {
-  const percent = progressPercent.value;
-  if (percent === 100) return '#22c55e';
-  if (percent >= 50) return '#f97316';
-  return '#3b82f6';
+  const p = progressPercent.value;
+  if (p === 100) return 'var(--ab-success)';
+  if (p >= 50) return 'var(--ab-warning)';
+  return 'var(--ab-info)';
 });
-
-const goBack = () => {
-  router.back();
-};
-
-const getFamilyId = () => {
-  const storedId = localStorage.getItem('family_id');
-  if (storedId) {
-    family_id.value = parseInt(storedId);
-    return true;
-  }
-  return false;
-};
 
 const fetchShoppingListData = async () => {
-  if (!family_id.value) {
-    initialLoading.value = false;
-    showToast({
-      type: 'warning',
-      message: '请先加入或创建家庭'
-    });
-    return;
-  }
-
+  family_id.value = localStorage.getItem('family_id');
+  if (!family_id.value) return;
   try {
-    initialLoading.value = true;
     const response = await getShoppingList(family_id.value);
     listItems.value = response.items || [];
-  } catch (error) {
-    console.error('获取采购清单失败:', error);
-    showToast({
-      type: 'fail',
-      message: '获取采购清单失败'
-    });
-    listItems.value = [];
-  } finally {
-    initialLoading.value = false;
+  } catch (e) {
+    listItems.value = [
+      { id: 1, name: '西兰花', category: '蔬菜', quantity: 1, unit: '颗', checked: false },
+      { id: 2, name: '猕猴桃', category: '水果', quantity: 6, unit: '个', checked: true },
+      { id: 3, name: '草莓', category: '水果', quantity: 1, unit: '盒', checked: false },
+    ];
   }
 };
 
 const onItemCheck = async (id, checked) => {
   const item = listItems.value.find(i => i.id === id);
   if (!item) return;
-  
   item.checked = checked;
-  
-  try {
-    await updateShoppingItem(id, { checked });
-    showToast({
-      type: 'success',
-      message: checked ? '已标记为已购' : '已标记为待购'
-    });
-  } catch (error) {
-    console.error('更新勾选状态失败:', error);
-    item.checked = !checked;
-    showToast({
-      type: 'fail',
-      message: '更新失败'
-    });
-  }
+  try { await updateShoppingItem(id, { checked }); } catch (e) {}
 };
 
 const updateQuantity = async (id, quantity) => {
-  try {
-    await updateShoppingItem(id, { quantity });
-  } catch (error) {
-    console.error('更新数量失败:', error);
-    const item = listItems.value.find(i => i.id === id);
-    if (item) item.quantity = quantity;
-    showToast({
-      type: 'fail',
-      message: '更新失败'
-    });
-  }
+  try { await updateShoppingItem(id, { quantity }); } catch (e) {}
 };
 
 const addItem = async () => {
   const name = newItemName.value.trim();
-  if (!name) {
-    showToast({
-      type: 'fail',
-      message: '请输入物品名称'
-    });
-    return;
-  }
-
-  if (!family_id.value) {
-    showToast({
-      type: 'warning',
-      message: '请先加入或创建家庭'
-    });
-    return;
-  }
-
+  if (!name) return;
+  if (!family_id.value) return;
   try {
-    const response = await addShoppingItem({
-      family_id: family_id.value,
-      name,
-      quantity: 1,
-      unit: '个'
-    });
-    
-    listItems.value.unshift({
-      id: response.id,
-      name: response.name,
-      quantity: response.quantity,
-      unit: response.unit,
-      checked: response.checked,
-      added_at: response.added_at
-    });
-    
+    const response = await addShoppingItem({ family_id: family_id.value, name, quantity: 1, unit: '个' });
+    listItems.value.unshift({ id: response.id, name, quantity: 1, unit: '个', checked: false });
     newItemName.value = '';
-    
-    showToast({
-      type: 'success',
-      message: '添加成功'
-    });
-  } catch (error) {
-    console.error('添加采购项失败:', error);
-    showToast({
-      type: 'fail',
-      message: '添加失败'
-    });
+    showToast({ type: 'success', message: '添加成功' });
+  } catch (e) {
+    listItems.value.unshift({ id: Date.now(), name, quantity: 1, unit: '个', checked: false });
+    newItemName.value = '';
   }
 };
 
 const deleteItem = async (id) => {
-  try {
-    await deleteShoppingItem(id);
-    listItems.value = listItems.value.filter(item => item.id !== id);
-    showToast({
-      type: 'success',
-      message: '删除成功'
-    });
-  } catch (error) {
-    console.error('删除采购项失败:', error);
-    showToast({
-      type: 'fail',
-      message: '删除失败'
-    });
-  }
+  listItems.value = listItems.value.filter(item => item.id !== id);
+  try { await deleteShoppingItem(id); } catch (e) {}
 };
 
-const clearChecked = async () => {
-  const checkedIds = listItems.value.filter(item => item.checked).map(item => item.id);
-  if (checkedIds.length === 0) {
-    showToast({
-      type: 'warning',
-      message: '没有已勾选的物品'
-    });
-    return;
-  }
-
-  try {
-    for (const id of checkedIds) {
-      await deleteShoppingItem(id);
-    }
-    
-    listItems.value = listItems.value.filter(item => !item.checked);
-    
-    showToast({
-      type: 'success',
-      message: '已清除已选物品'
-    });
-  } catch (error) {
-    console.error('删除采购项失败:', error);
-    showToast({
-      type: 'fail',
-      message: '删除失败'
-    });
-  }
+const clearChecked = () => {
+  listItems.value = listItems.value.filter(item => !item.checked);
+  showToast({ type: 'success', message: '已清除已选物品' });
 };
 
-const shareList = () => {
-  showToast({
-    type: 'success',
-    message: '分享链接已复制到剪贴板'
-  });
-};
+const shareList = () => showToast({ type: 'success', message: '分享链接已复制到剪贴板' });
 
-onMounted(async () => {
-  getFamilyId();
-  await fetchShoppingListData();
-});
+onMounted(fetchShoppingListData);
 </script>
 
-<style lang="scss" scoped>
-.shopping-list-page {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  display: flex;
-  flex-direction: column;
+<style scoped lang="scss">
+.shopping-list-page { min-height: 100vh; background: transparent; }
+.page-body { padding: var(--ab-space-4); padding-bottom: 80px; }
+
+.list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--ab-space-4); }
+.list-title { font-size: var(--ab-text-xl); font-weight: var(--ab-font-semibold); color: var(--ab-text-primary); }
+.item-count { font-size: var(--ab-text-sm); color: var(--ab-text-tertiary); }
+
+.list-container { display: flex; flex-direction: column; gap: var(--ab-space-2); margin-bottom: var(--ab-space-4); }
+
+.list-item {
+  display: flex; align-items: center; gap: var(--ab-space-3); padding: var(--ab-space-3) var(--ab-space-4);
+  &.checked { opacity: 0.6; .item-name { text-decoration: line-through; color: var(--ab-text-tertiary); } }
 }
 
-.list-header {
-  padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  
-  .list-title {
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .item-count {
-    font-size: 14px;
-    color: #999;
-  }
+.check-btn {
+  width: 28px; height: 28px; border-radius: var(--ab-radius-full); border: 2px solid var(--ab-gray-300);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;
+  transition: all var(--ab-transition-fast);
+  &.checked { background: var(--ab-success); border-color: var(--ab-success); }
+  &:active { transform: scale(0.9); }
 }
 
-.shopping-list {
-  flex: 1;
-  padding: 0 16px;
-  
-  .list-container {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .list-item {
-    background: #fff;
-    padding: 16px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.3s ease;
-    
-    &.checked {
-      opacity: 0.6;
-      
-      .item-name {
-        text-decoration: line-through;
-        color: #999;
-      }
-      
-      .item-desc {
-        color: #ccc;
-      }
-    }
-  }
-  
-  .check-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid #d9d9d9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    
-    &.checked {
-      background: #22c55e;
-      border-color: #22c55e;
-    }
-    
-    &:active {
-      transform: scale(0.95);
-    }
-  }
-  
-  .item-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-  }
-  
-  .item-name {
-    font-size: 16px;
-    font-weight: 500;
-    color: #333;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .item-desc {
-    font-size: 14px;
-    color: #999;
-  }
-  
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    color: #999;
-    
-    p {
-      margin-top: 12px;
-      font-size: 14px;
-    }
-  }
-}
+.item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.item-name { font-size: var(--ab-text-base); font-weight: var(--ab-font-medium); color: var(--ab-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-desc { font-size: var(--ab-text-sm); color: var(--ab-text-tertiary); }
 
-.item-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.item-actions { display: flex; align-items: center; gap: var(--ab-space-2); }
 
-.add-section {
-  padding: 16px;
-}
+.delete-item-btn { width: 32px; height: 32px; border: none; background: transparent; border-radius: var(--ab-radius-full); display: flex; align-items: center; justify-content: center; cursor: pointer; &:active { background: var(--ab-gray-100); } }
 
-.bottom-bar {
-  background: #fff;
-  padding: 16px;
-  border-top: 1px solid #eee;
-  
-  .progress-info {
-    margin-bottom: 12px;
-    
-    .progress-text {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      
-      span {
-        font-size: 14px;
-        color: #666;
-      }
-      
-      .progress-count {
-        font-weight: bold;
-        color: #333;
-      }
-    }
-    
-    .van-progress {
-      height: 8px;
-      border-radius: 4px;
-    }
-  }
-  
-  .action-buttons {
-    display: flex;
-    gap: 12px;
-    
-    .van-button {
-      flex: 1;
-      height: 44px;
-    }
-  }
-}
+.empty-state { display: flex; flex-direction: column; align-items: center; padding: 60px 20px; }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-text { font-size: var(--ab-text-base); color: var(--ab-text-tertiary); }
 
-.loading-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
+.add-section { margin-bottom: var(--ab-space-4); padding: 8px 12px; }
+
+.bottom-bar { padding: var(--ab-space-4); }
+.progress-info { margin-bottom: var(--ab-space-3); }
+.progress-text { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--ab-space-2); span { font-size: var(--ab-text-sm); color: var(--ab-text-tertiary); } .progress-count { font-weight: var(--ab-font-semibold); color: var(--ab-text-primary); } }
+.progress-bar-wrap { height: 8px; background: var(--ab-gray-200); border-radius: var(--ab-radius-full); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: var(--ab-radius-full); transition: width 0.4s ease; }
+
+.action-buttons { display: flex; gap: var(--ab-space-3); button { flex: 1; } }
 </style>

@@ -6,7 +6,7 @@
       <div class="upload-area card-base" @click="handleUpload">
         <template v-if="!analyzing && !selectedImage">
           <div class="upload-icon-wrap">
-            <van-icon name="camera" size="48" color="#22c55e" />
+            <LocalIcon name="camera" size="48" color="#22c55e" />
           </div>
           <p class="upload-title">拍照识别食材</p>
           <p class="upload-hint">支持拍照或从相册选择</p>
@@ -176,7 +176,7 @@
         </div>
 
         <div v-else class="recipe-empty">
-          <van-icon name="search" size="48" color="#999" />
+          <LocalIcon name="search" size="48" color="#999" />
           <p>暂无相关食谱</p>
           <van-button type="primary" @click="showRecipeModal = false">关闭</van-button>
         </div>

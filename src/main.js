@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import LocalIcon from './components/LocalIcon.vue'
 
 // Vant 组件库
 import { Button, Image as VantImage, Uploader, Divider, Tag, Cell, CellGroup, Card, Progress, List, Stepper, Checkbox, Icon, NavBar, Popup, Dialog, Toast, Loading, Swipe, SwipeItem, Tabbar, TabbarItem, Badge, Notify, Empty, PullRefresh, Form, Field, Tabs, Tab } from 'vant'
@@ -16,6 +17,9 @@ const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
+
+// 全局注册 LocalIcon（van-icon 的本地化替代品）
+app.component('LocalIcon', LocalIcon)
 
 app.use(Button)
 app.use(VantImage)
