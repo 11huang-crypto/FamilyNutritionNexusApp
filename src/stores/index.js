@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from '../utils/axios'
+import { getFamilyMembers } from '../api'  // 新增导入
 
 // 本地图片引入
 const vegImg = {
@@ -63,13 +64,20 @@ export const useAppStore = defineStore('app', () => {
     try {
       loading.value = true
       const response = await axios.get('/family/my')
-      // 后端返回格式：{"families": [...]}
       const families = response.families || response
       if (families && families.length > 0) {
-        family.value = {
+        const familyData = {
           ...families[0],
           members: []
         }
+        // 单独拉取成员列表
+        try {
+          const membersRes = await getFamilyMembers(familyData.id)
+          familyData.members = membersRes.members || []
+        } catch (e) {
+          console.warn('拉取成员列表失败:', e)
+        }
+        family.value = familyData
         localStorage.setItem('family_id', family.value.id.toString())
       }
     } catch (error) {
@@ -137,9 +145,15 @@ export const useAppStore = defineStore('app', () => {
   const addToBasket = async (item) => {
     try {
       const family_id = localStorage.getItem('family_id')
+      if (!family_id) {
+        console.error('添加食材失败: 未找到 family_id')
+        throw new Error('请先创建或加入家庭')
+      }
+      // 字段映射：前端传 name → 后端期望 ingredient_name
       const response = await axios.post('/basket/item', {
         family_id: parseInt(family_id),
-        ...item
+        ingredient_name: item.name,
+        quantity: String(item.quantity || 1)
       })
       
       // 重新加载菜篮子
@@ -152,10 +166,18 @@ export const useAppStore = defineStore('app', () => {
   }
 
   /**
-   * 移除食材
+   * 移除食材（同步后端删除 + 本地更新）
    */
-  const removeFromBasket = (id) => {
-    basket.value = basket.value.filter(item => item.id !== id)
+  const removeFromBasket = async (id) => {
+    try {
+      // 先调用后端 DELETE 接口同步删除
+      await axios.delete(`/basket/item/${id}`)
+      // 后端删除成功后再更新本地状态
+      basket.value = basket.value.filter(item => item.id !== id)
+    } catch (error) {
+      console.error('移除食材失败:', error)
+      throw error  // 抛出错误让调用方（BasketView）处理
+    }
   }
 
   /**
@@ -167,8 +189,9 @@ export const useAppStore = defineStore('app', () => {
       if (!family_id) return
       
       const response = await axios.get(`/basket/check?family_id=${family_id}`)
-      if (response && response.conflicts) {
-        return response.conflicts
+      // 后端返回 { warnings, total_items, risk_count }
+      if (response && response.warnings) {
+        return response.warnings
       }
       return []
     } catch (error) {
@@ -196,12 +219,12 @@ export const useAppStore = defineStore('app', () => {
     })
     
     // 检查食材禁忌
-    const conflicts = await checkFoodConflicts()
-    conflicts.forEach(conflict => {
+    const warnings = await checkFoodConflicts()
+    warnings.forEach(w => {
       newAlerts.push({
         id: Date.now() + Math.random(),
-        type: 'warning',
-        message: `${conflict.food1} + ${conflict.food2}: ${conflict.reason}`,
+        type: w.severity === 'high' ? 'danger' : 'warning',
+        message: w.message,
         icon: 'warning-o'
       })
     })

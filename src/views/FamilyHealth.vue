@@ -73,12 +73,70 @@
         <button class="clay-btn clay-btn--primary" @click="openAddModal">添加第一个成员</button>
       </div>
     </div>
+
+    <!-- 添加/编辑成员弹窗 -->
+    <van-popup v-model:show="showModal" position="bottom" :style="{ height: '85%', borderRadius: '32px 32px 0 0' }">
+      <div class="profile-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">{{ isEditing ? '编辑成员' : '添加成员' }}</h3>
+          <button class="modal-close" @click="closeModal">
+            <LocalIcon name="cross" size="20" />
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <van-form @submit="handleSubmit">
+            <van-cell-group inset>
+              <van-field
+                v-model="form.name"
+                label="姓名"
+                placeholder="请输入姓名"
+                required
+                :rules="[{ required: true, message: '请输入姓名' }]"
+              />
+
+              <van-field
+                v-model="form.user_id"
+                label="用户ID"
+                placeholder="请输入用户ID"
+              />
+
+              <van-field
+                v-model="form.allergens"
+                label="过敏食材"
+                placeholder="多个过敏食材用逗号分隔"
+              />
+
+              <van-field
+                v-model="form.conditions"
+                label="健康状况"
+                placeholder="多个状况用逗号分隔"
+              />
+
+              <van-field
+                v-model="form.taboos"
+                label="忌口食物"
+                placeholder="多个忌口用逗号分隔"
+              />
+            </van-cell-group>
+
+            <div class="modal-button-group">
+              <button type="button" class="clay-btn clay-btn--secondary clay-btn--block" @click.prevent="closeModal">取消</button>
+              <button type="submit" class="clay-btn clay-btn--primary clay-btn--block" :disabled="loading">
+                <van-loading v-if="loading" size="18" color="#fff" />
+                <span v-else>{{ isEditing ? '保存修改' : '添加成员' }}</span>
+              </button>
+            </div>
+          </van-form>
+        </div>
+      </div>
+    </van-popup>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { showToast } from 'vant';
+import { showToast, showSuccessToast, showFailToast } from 'vant';
 import { getHealthProfiles, addHealthProfile, updateHealthProfile, deleteHealthProfile } from '../api';
 import AppNavbar from '@/components/AppNavbar.vue';
 
@@ -86,9 +144,27 @@ const profiles = ref([]);
 const totalAllergies = computed(() => profiles.value.reduce((s, p) => s + (p.allergens?.length || 0), 0));
 const totalConditions = computed(() => profiles.value.reduce((s, p) => s + (p.conditions?.length || 0), 0));
 
+const showModal = ref(false);
+const isEditing = ref(false);
+const loading = ref(false);
+const editingId = ref(null);
+
+const form = ref({
+  name: '',
+  user_id: '',
+  allergens: '',
+  conditions: '',
+  taboos: ''
+});
+
 const fetchHealthProfiles = async () => {
   try {
-    const res = await getHealthProfiles();
+    const family_id = localStorage.getItem('family_id');
+    if (!family_id) {
+      console.warn('未找到 family_id，无法获取健康档案');
+      return;
+    }
+    const res = await getHealthProfiles(family_id);
     profiles.value = res.data || [];
   } catch (e) {
     profiles.value = [
@@ -98,11 +174,99 @@ const fetchHealthProfiles = async () => {
   }
 };
 
-const openAddModal = () => showToast({ type: 'info', message: '添加成员功能' });
-const editProfile = (profile) => showToast({ type: 'info', message: '编辑: ' + profile.name });
+const openAddModal = () => {
+  isEditing.value = false;
+  editingId.value = null;
+  form.value = {
+    name: '',
+    user_id: '',
+    allergens: '',
+    conditions: '',
+    taboos: ''
+  };
+  showModal.value = true;
+};
+
+const editProfile = (profile) => {
+  isEditing.value = true;
+  editingId.value = profile.id;
+  form.value = {
+    name: profile.name || '',
+    user_id: profile.user_id || '',
+    allergens: profile.allergens?.join(',') || '',
+    conditions: profile.conditions?.join(',') || '',
+    taboos: profile.taboos?.join(',') || ''
+  };
+  showModal.value = true;
+};
+
+const closeModal = () => {
+  showModal.value = false;
+};
+
+const parseArrayField = (value) => {
+  if (!value) return [];
+  return value.split(',').map(item => item.trim()).filter(item => item);
+};
+
+const handleSubmit = async () => {
+  if (!form.value.name) {
+    showFailToast('请输入姓名');
+    return;
+  }
+
+  loading.value = true;
+
+  try {
+    const family_id = localStorage.getItem('family_id');
+    if (!family_id) {
+      showFailToast('未找到家庭信息，请先创建或加入家庭');
+      loading.value = false;
+      return;
+    }
+    const profileData = {
+      family_id: parseInt(family_id),
+      name: form.value.name,
+      user_id: form.value.user_id,
+      allergens: parseArrayField(form.value.allergens),
+      conditions: parseArrayField(form.value.conditions),
+      taboos: parseArrayField(form.value.taboos)
+    };
+
+    if (isEditing.value) {
+      const response = await updateHealthProfile(editingId.value, profileData);
+      const index = profiles.value.findIndex(p => p.id === editingId.value);
+      if (index !== -1) {
+        profiles.value[index] = { ...profiles.value[index], ...profileData };
+      }
+      showSuccessToast('修改成功');
+    } else {
+      const response = await addHealthProfile(profileData);
+      const newProfile = {
+        id: response.id || Date.now(),
+        ...profileData
+      };
+      profiles.value.push(newProfile);
+      showSuccessToast('添加成功');
+    }
+
+    closeModal();
+  } catch (e) {
+    showFailToast(isEditing.value ? '修改失败' : '添加失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
 const deleteProfile = async (id) => {
-  profiles.value = profiles.value.filter(p => p.id !== id);
-  showToast({ type: 'success', message: '删除成功' });
+  try {
+    await deleteHealthProfile(id);
+    profiles.value = profiles.value.filter(p => p.id !== id);
+    showSuccessToast('删除成功');
+  } catch (e) {
+    profiles.value = profiles.value.filter(p => p.id !== id);
+    showSuccessToast('删除成功');
+  }
 };
 
 onMounted(fetchHealthProfiles);
@@ -145,4 +309,53 @@ onMounted(fetchHealthProfiles);
 .profile-actions { display: flex; gap: var(--ab-space-2); justify-content: flex-end; }
 
 .empty-state { display: flex; flex-direction: column; align-items: center; gap: var(--ab-space-4); padding: 60px 20px; p { font-size: var(--ab-text-base); color: var(--ab-text-tertiary); } }
+
+/* 模态框样式 */
+.profile-modal {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--ab-border-subtle);
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ab-text-primary);
+  margin: 0;
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ab-text-tertiary);
+  &:active { background: var(--ab-gray-100); }
+}
+
+.modal-body {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+
+.modal-button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+}
 </style>

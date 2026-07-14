@@ -47,6 +47,10 @@ export default defineConfig({
       '/analyze': {
         target: 'http://localhost:3000',
         changeOrigin: true
+      },
+      '/recipes': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
       }
     }
   }

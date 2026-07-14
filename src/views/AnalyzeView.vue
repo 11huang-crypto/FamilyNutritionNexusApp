@@ -321,17 +321,23 @@ const startAnalyze = async () => {
   clearInterval(progressInterval)
 }
 
-const addToBasket = (item) => {
-  store.addToBasket({
-    name: item.name,
-    category: item.category,
-    quantity: 1,
-    unit: '个',
-    freshness: item.confidence ? Math.round(item.confidence) + 5 : 95,
-    image: item.image,
-    nutrients: item.nutrients,
-  })
-  Toast.success(`已加入菜篮子: ${item.name}`)
+const addToBasket = async (item) => {
+  try {
+    await store.addToBasket({
+      name: item.name,
+      category: item.category,
+      quantity: 1,
+      unit: '个',
+      freshness: item.confidence ? Math.round(item.confidence) + 5 : 95,
+      image: item.image,
+      nutrients: item.nutrients,
+    })
+    Toast.success(`已加入菜篮子: ${item.name}`)
+  } catch (err) {
+    console.error('加入篮子失败:', err)
+    const msg = err?.response?.data?.detail || err?.message || '加入失败，请检查是否已创建家庭'
+    Toast.fail(msg)
+  }
 }
 
 const getType = (key) => {

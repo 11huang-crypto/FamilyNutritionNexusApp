@@ -47,7 +47,7 @@
       </div>
 
       <TransitionGroup name="list" tag="div" class="basket-list">
-        <VegCard v-for="item in store.basket" :key="item.id" :item="item" variant="list" :deletable="true" @click="viewDetail(item)" @delete="store.removeFromBasket(item.id)" />
+        <VegCard v-for="item in store.basket" :key="item.id" :item="item" variant="list" :deletable="true" @click="viewDetail(item)" @delete="handleDelete(item.id)" />
       </TransitionGroup>
 
       <div style="height: 20px;"></div>
@@ -74,13 +74,38 @@ const lowFreshCount = computed(() => store.basket.filter(i => i.freshness < 80).
 
 const checkConflict = async () => {
   try {
-    const res = await checkBasketConflict(store.basket.map(i => i.name))
-    conflicts.value = res.data.conflicts
-    if (!res.data.hasConflict) Toast.success('未发现禁忌组合，可以放心食用')
-  } catch (err) { Toast.fail('检查失败，请重试') }
+    const family_id = localStorage.getItem('family_id')
+    if (!family_id) {
+      Toast.fail('请先创建或加入家庭')
+      return
+    }
+    const res = await checkBasketConflict(family_id)
+    // 后端返回 { warnings, total_items, risk_count }
+    const warnings = res.warnings || []
+    conflicts.value = warnings.map(w => ({
+      items: w.related_items || [],
+      reason: w.message,
+      severity: w.severity
+    }))
+    if (warnings.length === 0) Toast.success('未发现禁忌组合，可以放心食用')
+  } catch (err) {
+    console.error('扫描禁忌失败:', err)
+    Toast.fail('检查失败，请重试')
+  }
 }
 
 const viewDetail = (item) => { console.log('查看详情:', item.name) }
+
+const handleDelete = async (id) => {
+  try {
+    await store.removeFromBasket(id)
+    Toast.success('已移除')
+  } catch (err) {
+    console.error('删除失败:', err)
+    const msg = err?.response?.data?.detail || '删除失败，请重试'
+    Toast.fail(msg)
+  }
+}
 </script>
 
 <style scoped lang="scss">

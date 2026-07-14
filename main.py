@@ -152,6 +152,10 @@ class FamilyCreate(BaseModel):
     name: str
 
 
+class FamilyJoinRequest(BaseModel):
+    invite_code: str
+
+
 class FamilyResponse(BaseModel):
     id: int
     name: str
@@ -627,11 +631,11 @@ def generate_invite_code(
 
 @app.post("/family/join")
 def join_family(
-    invite_code: str,
+    req: FamilyJoinRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    family = db.query(Family).filter(Family.invite_code == invite_code).first()
+    family = db.query(Family).filter(Family.invite_code == req.invite_code).first()
     
     if not family:
         raise HTTPException(

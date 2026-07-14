@@ -62,6 +62,10 @@
               <LocalIcon name="plus" size="16" color="var(--ab-brand-600)" />
               <span>创建家庭</span>
             </button>
+            <button v-if="!currentFamilyId" class="add-member-btn add-member-btn--lilac" @click="showJoinFamily = true">
+              <LocalIcon name="friends-o" size="16" color="var(--ab-lilac-600)" />
+              <span>加入家庭</span>
+            </button>
             <button class="add-member-btn add-member-btn--blue" @click="showInviteCode = true">
               <LocalIcon name="qr" size="16" color="var(--ab-blue-600)" />
               <span>邀请成员</span>
@@ -129,6 +133,77 @@
     </div>
 
     <AppTabbar :active="2" @change="handleTabChange" />
+
+    <!-- 创建家庭弹窗 -->
+    <van-popup v-model:show="showCreateFamily" position="center" :style="{ width: '85%', borderRadius: '24px' }">
+      <div class="modal-card">
+        <h3 class="modal-card-title">创建新家庭</h3>
+        <p class="modal-card-desc">输入家庭名称，开启智能营养生活</p>
+        <div class="clay-input" style="margin-bottom: 16px;">
+          <input v-model="familyName" type="text" placeholder="请输入家庭名称" @keyup.enter="handleCreateFamily" />
+        </div>
+        <div class="modal-btn-group">
+          <button class="clay-btn clay-btn--primary clay-btn--block" :disabled="creatingFamily" @click="handleCreateFamily">
+            <van-loading v-if="creatingFamily" size="18" color="#fff" />
+            <span v-else>确认创建</span>
+          </button>
+          <button class="clay-btn clay-btn--secondary clay-btn--block" @click="showCreateFamily = false">取消</button>
+        </div>
+      </div>
+    </van-popup>
+
+    <!-- 邀请成员弹窗 -->
+    <van-popup v-model:show="showInviteCode" position="center" :style="{ width: '85%', borderRadius: '24px' }">
+      <div class="modal-card">
+        <h3 class="modal-card-title">邀请成员</h3>
+        <p class="modal-card-desc">通过邀请码或邮箱邀请家人加入</p>
+
+        <!-- 邀请码显示区 -->
+        <div v-if="currentInviteCode" class="invite-code-display">
+          <span class="invite-code-label">邀请码</span>
+          <div class="invite-code-value">{{ currentInviteCode }}</div>
+          <span class="invite-code-hint">分享此邀请码给家人，输入后即可加入</span>
+        </div>
+
+        <!-- 生成邀请码按钮 -->
+        <button v-if="!currentInviteCode && currentFamilyId" class="clay-btn clay-btn--primary clay-btn--block" style="margin-bottom: 12px;" :disabled="generatingCode" @click="handleGenerateCode">
+          <van-loading v-if="generatingCode" size="18" color="#fff" />
+          <span v-else>生成邀请码</span>
+        </button>
+        <p v-if="!currentFamilyId" class="modal-card-desc" style="color: var(--ab-warning);">请先创建或加入一个家庭</p>
+
+        <!-- 邮箱邀请 -->
+        <div class="invite-divider"><span>或通过邮箱邀请</span></div>
+        <div class="clay-input" style="margin-bottom: 12px;">
+          <input v-model="inviteEmail" type="email" placeholder="输入家人邮箱地址" />
+        </div>
+        <div class="modal-btn-group">
+          <button class="clay-btn clay-btn--primary clay-btn--block" :disabled="invitingMember" @click="handleInviteByEmail">
+            <van-loading v-if="invitingMember" size="18" color="#fff" />
+            <span v-else>发送邀请</span>
+          </button>
+          <button class="clay-btn clay-btn--secondary clay-btn--block" @click="showInviteCode = false">关闭</button>
+        </div>
+      </div>
+    </van-popup>
+
+    <!-- 加入家庭弹窗 -->
+    <van-popup v-model:show="showJoinFamily" position="center" :style="{ width: '85%', borderRadius: '24px' }">
+      <div class="modal-card">
+        <h3 class="modal-card-title">加入家庭</h3>
+        <p class="modal-card-desc">输入邀请码加入家人的家庭</p>
+        <div class="clay-input" style="margin-bottom: 16px;">
+          <input v-model="joinCode" type="text" placeholder="请输入邀请码" @keyup.enter="handleJoinFamily" />
+        </div>
+        <div class="modal-btn-group">
+          <button class="clay-btn clay-btn--primary clay-btn--block" :disabled="joiningFamily" @click="handleJoinFamily">
+            <van-loading v-if="joiningFamily" size="18" color="#fff" />
+            <span v-else>加入家庭</span>
+          </button>
+          <button class="clay-btn clay-btn--secondary clay-btn--block" @click="showJoinFamily = false">取消</button>
+        </div>
+      </div>
+    </van-popup>
   </div>
 </template>
 
@@ -137,6 +212,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showSuccessToast, showFailToast, showDialog } from 'vant'
 import axios from '../utils/axios'
+import { generateInviteCode, inviteMember, joinFamily } from '../api'
 import { useAppStore } from '@/stores'
 import AppNavbar from '@/components/AppNavbar.vue'
 import AppTabbar from '@/components/AppTabbar.vue'
@@ -152,9 +228,16 @@ const mealCount = ref(0)
 const currentFamilyId = ref(null)
 const showCreateFamily = ref(false)
 const showInviteCode = ref(false)
+const showJoinFamily = ref(false)
 const familyName = ref('')
 const inviteCode = ref('')
 const currentInviteCode = ref('')
+const inviteEmail = ref('')
+const joinCode = ref('')
+const creatingFamily = ref(false)
+const generatingCode = ref(false)
+const invitingMember = ref(false)
+const joiningFamily = ref(false)
 
 const memberEmojiMap = { '爸爸': '👨', '妈妈': '👩', '儿子': '👦', '女儿': '👧', '爷爷': '👴', '奶奶': '👵', '我': '😊' }
 const memberColorMap = ['brand', 'orange', 'blue', 'lilac', 'peach', 'mint', 'pink']
@@ -197,17 +280,85 @@ const loadFamilyMembers = async () => {
 }
 
 const handleCreateFamily = async () => {
+  if (!familyName.value.trim()) {
+    showFailToast('请输入家庭名称');
+    return;
+  }
+  creatingFamily.value = true;
   try {
-    const res = await store.createFamily({ name: familyName.value })
+    const res = await store.createFamily({ name: familyName.value.trim() });
     if (res && res.id) {
-      showSuccessToast('创建成功')
-      showCreateFamily.value = false
-      await loadFamilyMembers()
+      showSuccessToast('创建成功');
+      showCreateFamily.value = false;
+      familyName.value = '';
+      await loadFamilyMembers();
+      await store.loadFamilyData();   // 同步更新首页 Store
     }
   } catch (e) {
-    showFailToast('创建失败')
+    showFailToast('创建失败');
+  } finally {
+    creatingFamily.value = false;
   }
-}
+};
+
+const handleGenerateCode = async () => {
+  if (!currentFamilyId.value) return;
+  generatingCode.value = true;
+  try {
+    const res = await generateInviteCode(currentFamilyId.value);
+    currentInviteCode.value = res.invite_code || '';
+    if (currentInviteCode.value) {
+      showSuccessToast('邀请码已生成');
+    }
+  } catch (e) {
+    showFailToast('生成邀请码失败');
+  } finally {
+    generatingCode.value = false;
+  }
+};
+
+const handleInviteByEmail = async () => {
+  if (!inviteEmail.value.trim()) {
+    showFailToast('请输入邮箱地址');
+    return;
+  }
+  if (!currentFamilyId.value) {
+    showFailToast('请先创建或加入家庭');
+    return;
+  }
+  invitingMember.value = true;
+  try {
+    await inviteMember(currentFamilyId.value, { email: inviteEmail.value.trim() });
+    showSuccessToast('邀请已发送');
+    inviteEmail.value = '';
+  } catch (e) {
+    showFailToast('邀请发送失败');
+  } finally {
+    invitingMember.value = false;
+  }
+};
+
+const handleJoinFamily = async () => {
+  if (!joinCode.value.trim()) {
+    showFailToast('请输入邀请码');
+    return;
+  }
+  joiningFamily.value = true;
+  try {
+    const res = await joinFamily({ invite_code: joinCode.value.trim() });
+    if (res && res.family_id) {
+      showSuccessToast('加入成功');
+      showJoinFamily.value = false;
+      joinCode.value = '';
+      await loadFamilyMembers();
+      await store.loadFamilyData();   // 同步更新首页 Store 中的家庭成员
+    }
+  } catch (e) {
+    showFailToast('加入失败，请检查邀请码');
+  } finally {
+    joiningFamily.value = false;
+  }
+};
 
 const handleLogout = () => {
   showDialog({ message: '确定退出登录？' }).then(() => {
@@ -407,7 +558,7 @@ onMounted(() => { loadFamilyMembers() })
 }
 .member-action-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 8px;
   margin-top: 4px;
 }
@@ -436,6 +587,11 @@ onMounted(() => { loadFamilyMembers() })
     color: var(--ab-blue-700);
     border: 1.5px solid var(--ab-blue-200);
   }
+  &--lilac {
+    background: var(--ab-lilac-50);
+    color: var(--ab-lilac-700);
+    border: 1.5px solid var(--ab-lilac-200);
+  }
   &:active { transform: scale(0.97); }
 }
 
@@ -454,6 +610,74 @@ onMounted(() => { loadFamilyMembers() })
   &:last-child { border-bottom: none; }
   &:active { opacity: 0.6; }
   span { flex: 1; font-size: 14px; color: var(--ab-text-primary); font-weight: 600; letter-spacing: -0.01em; }
+}
+
+/* 弹窗通用样式 */
+.modal-card {
+  padding: 28px 24px;
+}
+.modal-card-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ab-text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.modal-card-desc {
+  text-align: center;
+  font-size: 13px;
+  color: var(--ab-text-tertiary);
+  margin-bottom: 20px;
+}
+.modal-btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* 邀请码展示 */
+.invite-code-display {
+  background: var(--ab-brand-50);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.invite-code-label {
+  font-size: 12px;
+  color: var(--ab-text-tertiary);
+  font-weight: 500;
+}
+.invite-code-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ab-brand-600);
+  letter-spacing: 0.08em;
+  margin: 8px 0;
+  font-family: monospace;
+}
+.invite-code-hint {
+  font-size: 11px;
+  color: var(--ab-text-tertiary);
+}
+.invite-divider {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ab-text-tertiary);
+  margin: 16px 0;
+  position: relative;
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: calc(50% - 60px);
+    height: 1px;
+    background: var(--ab-border-medium);
+  }
+  &::before { left: 0; }
+  &::after { right: 0; }
 }
 
 .logout-section {

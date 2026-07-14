@@ -136,10 +136,13 @@ const fetchBasketData = async () => {
 };
 const checkFoodConflicts = async () => {
  try {
- const items = basketData.value?.items?.map(item => item.name) || [];
- const response = await checkFoodConflict({ foods: items });
- if (response.code === 200 && response.data.conflicts?.length > 0) {
- riskWarnings.value = response.data.conflicts.map(c => `${c.food1} + ${c.food2}: ${c.reason}`);
+ const family_id = localStorage.getItem('family_id');
+ if (!family_id) return;
+ const response = await checkFoodConflict(family_id);
+ // 后端返回 { warnings, total_items, risk_count }
+ const warnings = response.warnings || [];
+ if (warnings.length > 0) {
+ riskWarnings.value = warnings.map(w => w.message);
  }
  }
  catch (error) {

@@ -111,6 +111,62 @@ export const createFamily = async (data) => {
 };
 
 /**
+ * 获取家庭成员列表
+ * GET /family/{family_id}/members
+ */
+export const getFamilyMembers = async (family_id) => {
+  try {
+    const response = await axios.get(`/family/${family_id}/members`);
+    return response;
+  } catch (error) {
+    console.error('获取家庭成员失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 生成邀请码
+ * POST /family/{family_id}/generate-code
+ */
+export const generateInviteCode = async (family_id) => {
+  try {
+    const response = await axios.post(`/family/${family_id}/generate-code`);
+    return response;
+  } catch (error) {
+    console.error('生成邀请码失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 邀请成员（通过邮箱）
+ * POST /family/{family_id}/invite
+ */
+export const inviteMember = async (family_id, data) => {
+  try {
+    const response = await axios.post(`/family/${family_id}/invite`, data);
+    return response;
+  } catch (error) {
+    console.error('邀请成员失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 加入家庭（通过邀请码）
+ * POST /family/join
+ */
+export const joinFamily = async (data) => {
+  try {
+    const response = await axios.post('/family/join', data);
+    return response;
+  } catch (error) {
+    console.error('加入家庭失败:', error);
+    throw error;
+  }
+};
+
+/**
  * 添加健康档案
  * POST /health/profile
  */
